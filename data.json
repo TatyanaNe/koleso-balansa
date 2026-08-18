@@ -10,22 +10,26 @@
       "type": "checklist",
       "items": [
         { "id": "workout", "label": "Тренировка", "checked": false },
-        { "id": "sleep", "label": "Сон не меньше семи часов", "checked": false },
-        { "id": "water", "label": "Вода в течение дня", "checked": false },
-        { "id": "walk", "label": "Прогулка на воздухе", "checked": false }
+        { "id": "vibro", "label": "Виброплатформа", "checked": false },
+        { "id": "supplementsMorning", "label": "Бады утро", "checked": false },
+        { "id": "supplementsDay", "label": "Бады день", "checked": false },
+        { "id": "supplementsEvening", "label": "Бады вечер", "checked": false }
       ]
     },
     {
       "id": "work",
       "name": "Работа",
-      "icon": "💼",
+      "icon": "📱",
       "score": 5,
       "type": "counter",
-      "targetNote": "Считай за сегодня — цифры складываются в сводку за неделю и месяц",
+      "targetNote": "Сколько выпустила сегодня. Для сторис и шопс ставь 1, если было",
       "items": [
-        { "id": "orders", "label": "Заказы", "value": 0 },
-        { "id": "lessons", "label": "Занятия и уроки", "value": 0 },
-        { "id": "content", "label": "Публикации", "value": 0 }
+        { "id": "reels", "label": "Рилс, шт", "value": 0 },
+        { "id": "carousels", "label": "Карусели, шт", "value": 0 },
+        { "id": "stories", "label": "Сторис", "value": 0 },
+        { "id": "shops", "label": "Шопс", "value": 0 },
+        { "id": "clips", "label": "Клип, шт", "value": 0 },
+        { "id": "posts", "label": "Пост, шт", "value": 0 }
       ]
     },
     {
@@ -34,10 +38,13 @@
       "icon": "💰",
       "score": 5,
       "type": "counter",
-      "targetNote": "Сумма продаж за сегодня, в рублях",
+      "targetNote": "Сколько получила сегодня по каждому курсу, в рублях",
       "items": [
-        { "id": "salesAmount", "label": "Сумма продаж", "value": 0 },
-        { "id": "newClients", "label": "Новые клиенты", "value": 0 }
+        { "id": "salesAmount", "label": "Курс «Цветы с нуля»", "value": 0 },
+        { "id": "zavitki", "label": "Курс «Завитки»", "value": 0 },
+        { "id": "tulipsSelf", "label": "Тюльпаны самостоятельно", "value": 0 },
+        { "id": "tulipsSupport", "label": "Тюльпаны с поддержкой", "value": 0 },
+        { "id": "moti", "label": "Курс «Моти»", "value": 0 }
       ]
     },
     {
@@ -47,21 +54,9 @@
       "score": 5,
       "type": "checklist",
       "items": [
-        { "id": "together", "label": "Время вдвоём с ребёнком", "checked": false },
-        { "id": "call", "label": "Позвонила близким", "checked": false },
-        { "id": "home", "label": "Дома спокойно", "checked": false }
-      ]
-    },
-    {
-      "id": "rest",
-      "name": "Отдых",
-      "icon": "🌙",
-      "score": 5,
-      "type": "checklist",
-      "items": [
-        { "id": "pause", "label": "Была пауза среди дня", "checked": false },
-        { "id": "offline", "label": "Час без телефона", "checked": false },
-        { "id": "early", "label": "Легла вовремя", "checked": false }
+        { "id": "walk", "label": "Прогулка", "checked": false },
+        { "id": "eatingOut", "label": "Еда вне дома с семьёй", "checked": false },
+        { "id": "visit", "label": "Была в гостях", "checked": false }
       ]
     },
     {
@@ -71,8 +66,10 @@
       "score": 5,
       "type": "checklist",
       "items": [
-        { "id": "made", "label": "Делала что-то руками для себя", "checked": false },
-        { "id": "idea", "label": "Записала идею", "checked": false }
+        { "id": "flowers", "label": "Цветы", "checked": false },
+        { "id": "drawing", "label": "Рисую", "checked": false },
+        { "id": "beads", "label": "Бусины", "checked": false },
+        { "id": "dance", "label": "Танцы", "checked": false }
       ]
     },
     {
@@ -82,19 +79,7 @@
       "score": 5,
       "type": "checklist",
       "items": [
-        { "id": "learn", "label": "Училась новому", "checked": false },
-        { "id": "read", "label": "Читала", "checked": false }
-      ]
-    },
-    {
-      "id": "self",
-      "name": "Я для себя",
-      "icon": "✨",
-      "score": 5,
-      "type": "checklist",
-      "items": [
-        { "id": "care", "label": "Сделала что-то приятное себе", "checked": false },
-        { "id": "boundary", "label": "Сказала «нет», когда не хотела", "checked": false }
+        { "id": "materials", "label": "Обучающие материалы просмотрены", "checked": false }
       ]
     }
   ]
