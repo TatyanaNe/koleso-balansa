@@ -449,8 +449,8 @@
 
   function getFinanceMoneyValue() {
     var financeSphere = state.spheres.filter(function (s) { return s.id === 'finance'; })[0];
-    var item = financeSphere && financeSphere.items.filter(function (i) { return i.id === 'salesAmount'; })[0];
-    return item ? (parseInt(item.value, 10) || 0) : 0;
+    if (!financeSphere) return 0;
+    return financeSphere.items.reduce(function (sum, i) { return sum + (parseInt(i.value, 10) || 0); }, 0);
   }
 
   function getWorkValues() {
@@ -557,7 +557,7 @@
       avgLabel.textContent = 'Средний балл дня';
       avgNum.innerHTML = formatScore(typeof todayEntry.avgScore === 'number' ? todayEntry.avgScore : liveAvg) + '<span>/10</span>';
       walletNum.textContent = todayMoney.toLocaleString('ru-RU') + ' ₽';
-      walletNote.textContent = 'Сегодня — из поля «Сумма продаж» в Финансах';
+      walletNote.textContent = 'Сегодня — сумма по всем курсам в Финансах';
       workoutCard.classList.add('hidden');
       workLabel.textContent = 'Контент сегодня';
       renderWorkList(todayEntry.work || getWorkValues());
