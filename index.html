@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Колесо баланса</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{
+    --violet-100:#EFE9FF;
+    --violet-200:#E1D6FF;
+    --blue-100:#E7F3FF;
+    --blue-200:#D5EAFF;
+    --pink-100:#FFE6F0;
+    --pink-200:#FFD2E6;
+    --pink-400:#F290BE;
+    --pink-500:#E56FA5;
+    --peach-100:#FFF1E4;
+    --ink:#3B3550;
+    --ink-soft:#8A84A0;
+    --white:#ffffff;
+    --glass-bg: rgba(255,255,255,0.55);
+    --glass-border: rgba(255,255,255,0.75);
+    --glass-shadow: 0 20px 50px rgba(130,110,190,0.16);
+    --glass-shadow-sm: 0 8px 22px rgba(130,110,190,0.12);
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0; padding: 0; min-height: 100%;
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: contain;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .bg-wash {
+    position: fixed; inset: 0; z-index: -2; pointer-events: none;
+    background:
+      radial-gradient(55% 45% at 8% -5%, #E7DBFF 0%, transparent 60%),
+      radial-gradient(50% 40% at 95% 5%, #CDE7FF 0%, transparent 60%),
+      radial-gradient(55% 50% at 90% 95%, #FFD2E6 0%, transparent 60%),
+      radial-gradient(45% 40% at 5% 100%, #FFEAD2 0%, transparent 55%),
+      linear-gradient(160deg, #EFEBFF 0%, #F7EEFF 45%, #FFF3F7 100%);
+  }
+
+  .blob {
+    position: fixed; z-index: -1; border-radius: 50%; pointer-events: none;
+    filter: blur(50px); opacity: 0.55;
+  }
+  .blob-a { width: 260px; height: 260px; top: -60px; left: -80px; background: var(--violet-200);
+    animation: drift-a 16s ease-in-out infinite alternate; }
+  .blob-b { width: 220px; height: 220px; bottom: -40px; right: -60px; background: var(--pink-200);
+    animation: drift-b 19s ease-in-out infinite alternate; }
+  @keyframes drift-a { from { transform: translate(0,0); } to { transform: translate(24px, 30px); } }
+  @keyframes drift-b { from { transform: translate(0,0); } to { transform: translate(-22px, -26px); } }
+
+  #app { max-width: 480px; margin: 0 auto; padding: 22px 18px calc(30px + env(safe-area-inset-bottom, 0px)); min-height: 100vh; }
+
+  header { padding: 6px 4px 18px; }
+  .profile-row { display: flex; align-items: center; gap: 11px; margin-bottom: 14px; }
+  .avatar-wrap {
+    width: 46px; height: 46px; min-width: 46px; border-radius: 50%; overflow: hidden;
+    position: relative; background: var(--pink-100); color: var(--pink-500);
+    font-weight: 700; font-size: 16px; display: flex; align-items: center; justify-content: center;
+    border: 2px solid rgba(255,255,255,0.85); box-shadow: var(--glass-shadow-sm);
+  }
+  .avatar-wrap img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .profile-name { margin: 0; font-size: 15px; font-weight: 700; color: var(--ink); }
+  .profile-role {
+    margin: 2px 0 0; font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase;
+    color: var(--pink-500); font-weight: 700;
+  }
+  header h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.2px; color: var(--ink); }
+  header .updated { margin: 6px 0 0; font-size: 13px; color: var(--ink-soft); }
+
+  .glass {
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(22px) saturate(160%);
+    backdrop-filter: blur(22px) saturate(160%);
+    border: 1px solid var(--glass-border);
+    border-radius: 26px;
+    box-shadow: var(--glass-shadow-sm);
+  }
+
+  /* balance card */
+  .balance-card {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 20px; margin-bottom: 14px;
+  }
+  .balance-card .label { font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--pink-500); font-weight: 700; margin: 0 0 6px; }
+  .balance-card .num { font-size: 32px; font-weight: 700; color: var(--ink); line-height: 1; }
+  .balance-card .num span { font-size: 15px; font-weight: 600; color: var(--ink-soft); }
+  .balance-card .sub { margin: 6px 0 0; font-size: 12.5px; color: var(--ink-soft); }
+  .ring-wrap { position: relative; width: 62px; height: 62px; flex: none; }
+  .ring-wrap svg { width: 100%; height: 100%; }
+  .ring-wrap .ring-pct {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: var(--pink-500);
+  }
+
+  /* chart card */
+  .chart-card { padding: 18px 10px 8px; margin-bottom: 14px; }
+  .chart-card .card-title { margin: 2px 0 0; font-size: 12px; font-weight: 700; color: var(--ink-soft); text-align: center; letter-spacing: 0.3px; }
+  .chart-wrap { position: relative; width: min(72vw, 270px); margin: 6px auto 4px; }
+  .chart-wrap svg { width: 100%; height: auto; display: block; }
+  .grid-ring { fill: none; stroke: rgba(180,160,220,0.28); stroke-width: 1; }
+  .axis-line { stroke: rgba(180,160,220,0.28); stroke-width: 1; }
+  .value-polygon { fill: url(#petalFill); stroke: var(--pink-500); stroke-width: 1.6; stroke-linejoin: round; }
+  .vertex-dot { fill: var(--white); stroke: var(--pink-500); stroke-width: 2; }
+  .axis-icon { font-size: 15px; text-anchor: middle; dominant-baseline: middle; }
+
+  /* spheres list */
+  .spheres { display: flex; flex-direction: column; gap: 10px; }
+  .sphere-card { padding: 14px 16px; }
+  .sphere-top { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .sphere-icon {
+    width: 34px; height: 34px; min-width: 34px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .sphere-name { flex: 1; font-size: 14.5px; font-weight: 600; color: var(--ink); }
+  .sphere-score { font-size: 17px; font-weight: 700; color: var(--pink-500); min-width: 30px; text-align: right; }
+  .sphere-score span { font-size: 12px; color: var(--ink-soft); font-weight: 600; }
+  .sphere-chevron { font-size: 12px; color: var(--ink-soft); transition: transform 0.22s ease; margin-left: 2px; }
+  .sphere-card.expanded .sphere-chevron { transform: rotate(180deg); }
+
+  .sphere-detail { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.28s ease, opacity 0.22s ease; }
+  .sphere-card.expanded .sphere-detail { max-height: 640px; opacity: 1; margin-top: 12px; }
+
+  .target-note { font-size: 11.5px; color: var(--ink-soft); margin: 0 0 8px; }
+
+  .check-row, .count-row {
+    display: flex; align-items: center; gap: 10px; padding: 9px 0;
+    border-top: 1px solid rgba(180,160,220,0.18); cursor: pointer;
+  }
+  .check-row:first-child, .count-row:first-child { border-top: none; }
+  .count-row { cursor: default; justify-content: space-between; }
+
+  .check-box {
+    width: 22px; height: 22px; min-width: 22px; border-radius: 8px; border: 2px solid var(--pink-200);
+    display: flex; align-items: center; justify-content: center; background: #fff;
+    font-size: 13px; color: #fff; transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .check-box.checked { background: var(--pink-500); border-color: var(--pink-500); }
+  .check-label { flex: 1; font-size: 13.5px; color: var(--ink); }
+
+  .count-label { flex: 1; font-size: 13.5px; color: var(--ink); }
+  .count-input {
+    width: 54px; text-align: center; font-size: 15px; font-weight: 700; color: var(--pink-500);
+    border: 1.5px solid var(--pink-200); border-radius: 10px; padding: 6px 4px;
+    background: #fff; -moz-appearance: textfield; font-family: inherit;
+  }
+  .count-input::-webkit-outer-spin-button, .count-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+  input[type="range"].sphere-slider {
+    -webkit-appearance: none; appearance: none; width: 100%; height: 6px;
+    border-radius: 999px; margin-top: 12px; background: var(--pink-100); outline: none;
+    touch-action: pan-y;
+  }
+  input[type="range"].sphere-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--white); border: 3px solid var(--pink-500); box-shadow: var(--glass-shadow-sm); cursor: pointer;
+  }
+  input[type="range"].sphere-slider::-moz-range-thumb {
+    width: 20px; height: 20px; border-radius: 50%; background: var(--white);
+    border: 3px solid var(--pink-500); box-shadow: var(--glass-shadow-sm); cursor: pointer;
+  }
+  input[type="range"].sphere-slider::-moz-range-track { height: 6px; border-radius: 999px; background: var(--pink-100); }
+
+  .hint { text-align: center; margin-top: 16px; font-size: 12.5px; color: var(--ink-soft); }
+
+  /* view + period tabs */
+  .view-tabs {
+    display: flex; gap: 6px; background: var(--glass-bg); border: 1px solid var(--glass-border);
+    -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+    padding: 5px; border-radius: 999px; margin: 4px 0 18px;
+  }
+  .view-tab {
+    flex: 1; text-align: center; padding: 9px 0; border-radius: 999px;
+    font-size: 13px; font-weight: 700; color: var(--ink-soft); cursor: pointer;
+  }
+  .view-tab.active { background: #fff; color: var(--pink-500); box-shadow: var(--glass-shadow-sm); }
+
+  .period-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .period-tab {
+    flex: 1; text-align: center; padding: 8px 0; border-radius: 999px; font-size: 12.5px; font-weight: 700;
+    color: var(--ink-soft); background: var(--glass-bg); border: 1px solid var(--glass-border); cursor: pointer;
+  }
+  .period-tab.active { background: var(--pink-500); color: #fff; border-color: var(--pink-500); }
+
+  .summary-card { padding: 18px 20px; margin-bottom: 14px; }
+  .summary-card .label {
+    margin: 0 0 8px; font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase;
+    color: var(--pink-500); font-weight: 700;
+  }
+  .summary-card .num { font-size: 28px; font-weight: 700; color: var(--ink); }
+  .summary-card .num span { font-size: 14px; font-weight: 600; color: var(--ink-soft); margin-left: 4px; }
+  .summary-card .note { margin: 8px 0 0; font-size: 11.5px; color: var(--ink-soft); }
+
+  .stat-row {
+    display: flex; align-items: center; justify-content: space-between; padding: 8px 0;
+    border-top: 1px solid rgba(180,160,220,0.18); font-size: 13.5px;
+  }
+  .stat-row:first-child { border-top: none; }
+  .stat-row .stat-label { color: var(--ink); }
+  .stat-row .stat-value { font-weight: 700; color: var(--pink-500); }
+
+  .state-card { margin-top: 60px; text-align: center; padding: 32px 22px; }
+  .state-card .emoji { font-size: 34px; }
+  .state-card h2 { font-size: 17px; margin: 12px 0 4px; color: var(--ink); }
+  .state-card p { font-size: 13.5px; color: var(--ink-soft); margin: 0 0 16px; }
+  .state-card button {
+    border: none; background: var(--pink-500); color: #fff; font-size: 14px; font-weight: 700;
+    padding: 11px 22px; border-radius: 999px; box-shadow: var(--glass-shadow-sm);
+  }
+
+  .skeleton-ring {
+    width: 130px; height: 130px; margin: 60px auto 0; border-radius: 50%;
+    border: 10px solid var(--pink-100); border-top-color: var(--pink-400);
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="bg-wash"></div>
+<div class="blob blob-a"></div>
+<div class="blob blob-b"></div>
+
+<div id="app">
+
+  <div id="loadingState"><div class="skeleton-ring"></div></div>
+
+  <div id="errorState" class="state-card hidden">
+    <div class="emoji">🥀</div>
+    <h2>Не получилось загрузить данные</h2>
+    <p>Проверь файл data.json и попробуй ещё раз</p>
+    <button id="retryBtn">Обновить</button>
+  </div>
+
+  <div id="mainState" class="hidden">
+    <header>
+      <div class="profile-row">
+        <div class="avatar-wrap">
+          <span id="avatarInitial">Т</span>
+          <img id="avatarImg" alt="" onerror="this.style.display='none'">
+        </div>
+        <div>
+          <p class="profile-name" id="profileName">Татьяна</p>
+          <p class="profile-role">Мой баланс</p>
+        </div>
+      </div>
+      <h1>Колесо баланса</h1>
+      <p class="updated" id="updatedText"></p>
+    </header>
+
+    <div class="view-tabs">
+      <div class="view-tab active" data-view="wheel">Колесо</div>
+      <div class="view-tab" data-view="summary">Итоги</div>
+    </div>
+
+    <div id="wheelView">
+      <div class="glass balance-card">
+        <div>
+          <p class="label">Твой баланс</p>
+          <div class="num"><span id="avgNumber">0,0</span><span>/10</span></div>
+          <p class="sub" id="avgSubText">среднее по сферам</p>
+        </div>
+        <div class="ring-wrap">
+          <svg viewBox="0 0 64 64">
+            <defs>
+              <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#C9A8FF"/>
+                <stop offset="100%" stop-color="#F290BE"/>
+              </linearGradient>
+            </defs>
+            <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(180,160,220,0.25)" stroke-width="7"/>
+            <circle id="avgRingProgress" cx="32" cy="32" r="26" fill="none" stroke="url(#ringGrad)"
+              stroke-width="7" stroke-linecap="round" transform="rotate(-90 32 32)"/>
+          </svg>
+          <div class="ring-pct" id="avgPercentText">0%</div>
+        </div>
+      </div>
+
+      <div class="glass chart-card">
+        <p class="card-title">БАЛАНС ПО СФЕРАМ</p>
+        <div class="chart-wrap">
+          <svg id="chartSvg" viewBox="0 0 300 300">
+            <defs>
+              <radialGradient id="petalFill" cx="50%" cy="50%" r="65%">
+                <stop offset="0%" stop-color="#E1D6FF" stop-opacity="0.9"/>
+                <stop offset="100%" stop-color="#F290BE" stop-opacity="0.85"/>
+              </radialGradient>
+            </defs>
+            <g id="gridLayer"></g>
+            <g id="axisLayer"></g>
+            <polygon id="valuePolygon" class="value-polygon" points=""></polygon>
+            <g id="petalLayer"></g>
+            <g id="iconLayer"></g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="spheres" id="spheresList"></div>
+
+      <p class="hint">Двигай ползунок — так оцениваешь сферу сама; детали — по тапу</p>
+    </div>
+
+    <div id="summaryView" class="hidden">
+      <div class="period-tabs">
+        <div class="period-tab active" data-period="day">День</div>
+        <div class="period-tab" data-period="week">Неделя</div>
+        <div class="period-tab" data-period="month">Месяц</div>
+      </div>
+
+      <div class="glass summary-card">
+        <p class="label" id="summaryAvgLabel">Средний балл дня</p>
+        <div class="num" id="summaryAvgNum">0,0<span>/10</span></div>
+      </div>
+
+      <div class="glass summary-card">
+        <p class="label">Деньги в кошельке</p>
+        <div class="num" id="walletNum">0 ₽</div>
+        <p class="note" id="walletNote"></p>
+      </div>
+
+      <div class="glass summary-card hidden" id="summaryWorkoutCard">
+        <p class="label" id="summaryWorkoutLabel">Тренировок за неделю</p>
+        <div class="num" id="summaryWorkoutNum">0</div>
+      </div>
+
+      <div class="glass summary-card" id="summaryWorkCard">
+        <p class="label" id="summaryWorkLabel">Контент сегодня</p>
+        <div id="summaryWorkList"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  if (window.Telegram && window.Telegram.WebApp) {
+    Telegram.WebApp.ready();
+    Telegram.WebApp.expand();
+  }
+
+  var MAX_SCORE = 10;
+  var CENTER = { x: 150, y: 150 };
+  var MAX_RADIUS = 108;
+  var RINGS = [0.25, 0.5, 0.75, 1];
+  var CHIP_GRADIENTS = [
+    'linear-gradient(135deg, #E1D6FF, #FFD2E6)',
+    'linear-gradient(135deg, #D5EAFF, #E1D6FF)',
+    'linear-gradient(135deg, #FFD2E6, #FFEAD2)',
+    'linear-gradient(135deg, #D5EAFF, #FFD2E6)',
+    'linear-gradient(135deg, #E1D6FF, #D5EAFF)'
+  ];
+
+  var svgNS = "http://www.w3.org/2000/svg";
+  var state = { spheres: [] };
+  var petalEls = [];
+  var RING_CIRC = 2 * Math.PI * 26;
+
+  var loadingEl = document.getElementById('loadingState');
+  var errorEl = document.getElementById('errorState');
+  var mainEl = document.getElementById('mainState');
+
+  function showState(name) {
+    loadingEl.classList.toggle('hidden', name !== 'loading');
+    errorEl.classList.toggle('hidden', name !== 'error');
+    mainEl.classList.toggle('hidden', name !== 'main');
+  }
+
+  function fetchData() {
+    showState('loading');
+    fetch('data.json?v=' + Date.now())
+      .then(function (res) { if (!res.ok) throw new Error('bad response'); return res.json(); })
+      .then(function (data) {
+        if (!data || !Array.isArray(data.spheres) || !data.spheres.length) throw new Error('bad shape');
+        state = data;
+        renderApp();
+      })
+      .catch(function () { showState('error'); });
+  }
+
+  function formatDate(iso) {
+    try { return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }); }
+    catch (e) { return iso; }
+  }
+
+  function polar(index, total, ratio, radius) {
+    var angle = -Math.PI / 2 + index * (2 * Math.PI / total);
+    return { x: CENTER.x + radius * ratio * Math.cos(angle), y: CENTER.y + radius * ratio * Math.sin(angle) };
+  }
+
+  function pointsAttr(points) {
+    return points.map(function (p) { return p.x.toFixed(1) + ',' + p.y.toFixed(1); }).join(' ');
+  }
+
+  function computeScore(sphere) {
+    return typeof sphere.score === 'number' ? sphere.score : 0;
+  }
+
+  function computePoints(spheres) {
+    return spheres.map(function (s, i) {
+      var ratio = Math.max(0, Math.min(1, computeScore(s) / MAX_SCORE));
+      return polar(i, spheres.length, ratio, MAX_RADIUS);
+    });
+  }
+
+  function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+  function dateKey(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+  function todayKey() { return dateKey(new Date()); }
+
+  var storageAvailable = (function () {
+    try {
+      var k = '__wheel_test__';
+      window.localStorage.setItem(k, '1');
+      window.localStorage.removeItem(k);
+      return true;
+    } catch (e) { return false; }
+  })();
+
+  function loadHistory() {
+    if (!storageAvailable) return {};
+    try {
+      var raw = window.localStorage.getItem('wheelHistory');
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) { return {}; }
+  }
+
+  var history = loadHistory();
+
+  function saveHistory() {
+    if (!storageAvailable) return;
+    try { window.localStorage.setItem('wheelHistory', JSON.stringify(history)); } catch (e) {}
+  }
+
+  function getFinanceMoneyValue() {
+    var financeSphere = state.spheres.filter(function (s) { return s.id === 'finance'; })[0];
+    var item = financeSphere && financeSphere.items.filter(function (i) { return i.id === 'salesAmount'; })[0];
+    return item ? (parseInt(item.value, 10) || 0) : 0;
+  }
+
+  function getWorkValues() {
+    var workSphere = state.spheres.filter(function (s) { return s.id === 'work'; })[0];
+    var values = {};
+    if (workSphere) {
+      workSphere.items.forEach(function (i) { values[i.id] = parseInt(i.value, 10) || 0; });
+    }
+    return values;
+  }
+
+  function snapshotToday() {
+    var key = todayKey();
+    var avg = state.spheres.reduce(function (acc, s) { return acc + computeScore(s); }, 0) / state.spheres.length;
+    var healthSphere = state.spheres.filter(function (s) { return s.id === 'health'; })[0];
+    var workoutItem = healthSphere && healthSphere.items.filter(function (i) { return i.id === 'workout'; })[0];
+    var entry = history[key] || {};
+    entry.avgScore = avg;
+    entry.workout = !!(workoutItem && workoutItem.checked);
+    entry.money = getFinanceMoneyValue();
+    entry.work = getWorkValues();
+    history[key] = entry;
+    saveHistory();
+  }
+
+  function getWeekRange(d) {
+    var day = d.getDay();
+    var diffToMonday = day === 0 ? -6 : 1 - day;
+    var monday = new Date(d.getFullYear(), d.getMonth(), d.getDate() + diffToMonday);
+    var sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6);
+    return { start: monday, end: sunday };
+  }
+
+  function keysInRange(start, end) {
+    var keys = [];
+    var cur = new Date(start);
+    while (cur <= end) {
+      keys.push(dateKey(cur));
+      cur.setDate(cur.getDate() + 1);
+    }
+    return keys;
+  }
+
+  function aggregateRange(keys) {
+    var scores = [];
+    var workouts = 0;
+    var money = 0;
+    var work = {};
+
+    keys.forEach(function (k) {
+      var e = history[k];
+      if (!e) return;
+      if (typeof e.avgScore === 'number') scores.push(e.avgScore);
+      if (e.workout) workouts += 1;
+      if (typeof e.money === 'number') money += e.money;
+      if (e.work) {
+        Object.keys(e.work).forEach(function (id) {
+          work[id] = (work[id] || 0) + (parseInt(e.work[id], 10) || 0);
+        });
+      }
+    });
+
+    var avg = scores.length ? scores.reduce(function (a, b) { return a + b; }, 0) / scores.length : 0;
+    return { avg: avg, workouts: workouts, money: money, work: work };
+  }
+
+  var currentView = 'wheel';
+  var currentPeriod = 'day';
+
+  function renderWorkList(values) {
+    var workSphere = state.spheres.filter(function (s) { return s.id === 'work'; })[0];
+    var list = document.getElementById('summaryWorkList');
+    list.innerHTML = '';
+    if (!workSphere) return;
+    workSphere.items.forEach(function (item) {
+      var row = document.createElement('div');
+      row.className = 'stat-row';
+      var label = document.createElement('div');
+      label.className = 'stat-label';
+      label.textContent = item.label;
+      var value = document.createElement('div');
+      value.className = 'stat-value';
+      value.textContent = values[item.id] || 0;
+      row.appendChild(label); row.appendChild(value);
+      list.appendChild(row);
+    });
+  }
+
+  function renderSummary() {
+    var now = new Date();
+    var avgLabel = document.getElementById('summaryAvgLabel');
+    var avgNum = document.getElementById('summaryAvgNum');
+    var walletNum = document.getElementById('walletNum');
+    var walletNote = document.getElementById('walletNote');
+    var workoutCard = document.getElementById('summaryWorkoutCard');
+    var workoutLabel = document.getElementById('summaryWorkoutLabel');
+    var workoutNum = document.getElementById('summaryWorkoutNum');
+    var workLabel = document.getElementById('summaryWorkLabel');
+
+    if (currentPeriod === 'day') {
+      var todayEntry = history[todayKey()] || {};
+      var liveAvg = state.spheres.reduce(function (acc, s) { return acc + computeScore(s); }, 0) / state.spheres.length;
+      var todayMoney = typeof todayEntry.money === 'number' ? todayEntry.money : getFinanceMoneyValue();
+      avgLabel.textContent = 'Средний балл дня';
+      avgNum.innerHTML = formatScore(typeof todayEntry.avgScore === 'number' ? todayEntry.avgScore : liveAvg) + '<span>/10</span>';
+      walletNum.textContent = todayMoney.toLocaleString('ru-RU') + ' ₽';
+      walletNote.textContent = 'Сегодня — из поля «Сумма продаж» в Финансах';
+      workoutCard.classList.add('hidden');
+      workLabel.textContent = 'Контент сегодня';
+      renderWorkList(todayEntry.work || getWorkValues());
+      return;
+    }
+
+    if (currentPeriod === 'week') {
+      var wRange = getWeekRange(now);
+      var wKeys = keysInRange(wRange.start, wRange.end);
+      var wAgg = aggregateRange(wKeys);
+      avgLabel.textContent = 'Средний балл за неделю';
+      avgNum.innerHTML = formatScore(wAgg.avg) + '<span>/10</span>';
+      walletNum.textContent = wAgg.money.toLocaleString('ru-RU') + ' ₽';
+      walletNote.textContent = 'Сумма продаж за эту неделю';
+      workoutCard.classList.remove('hidden');
+      workoutLabel.textContent = 'Тренировок за неделю';
+      workoutNum.textContent = wAgg.workouts;
+      workLabel.textContent = 'Контент за неделю';
+      renderWorkList(wAgg.work);
+      return;
+    }
+
+    if (currentPeriod === 'month') {
+      var mStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      var mEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      var mKeys = keysInRange(mStart, mEnd);
+      var mAgg = aggregateRange(mKeys);
+      avgLabel.textContent = 'Средний балл за месяц';
+      avgNum.innerHTML = formatScore(mAgg.avg) + '<span>/10</span>';
+      walletNum.textContent = mAgg.money.toLocaleString('ru-RU') + ' ₽';
+      walletNote.textContent = 'Сумма продаж за этот месяц';
+      workoutCard.classList.remove('hidden');
+      workoutLabel.textContent = 'Тренировок за месяц';
+      workoutNum.textContent = mAgg.workouts;
+      workLabel.textContent = 'Контент за месяц';
+      renderWorkList(mAgg.work);
+      return;
+    }
+  }
+
+  document.querySelectorAll('.view-tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      document.querySelectorAll('.view-tab').forEach(function (t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      currentView = tab.getAttribute('data-view');
+      document.getElementById('wheelView').classList.toggle('hidden', currentView !== 'wheel');
+      document.getElementById('summaryView').classList.toggle('hidden', currentView !== 'summary');
+      if (currentView === 'summary') renderSummary();
+    });
+  });
+
+  document.querySelectorAll('.period-tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      document.querySelectorAll('.period-tab').forEach(function (t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      currentPeriod = tab.getAttribute('data-period');
+      renderSummary();
+    });
+  });
+
+  function drawStaticChart(spheres) {
+    var gridLayer = document.getElementById('gridLayer');
+    var axisLayer = document.getElementById('axisLayer');
+    var iconLayer = document.getElementById('iconLayer');
+    var petalLayer = document.getElementById('petalLayer');
+    gridLayer.innerHTML = ''; axisLayer.innerHTML = ''; iconLayer.innerHTML = ''; petalLayer.innerHTML = '';
+    petalEls = [];
+    var total = spheres.length;
+
+    RINGS.forEach(function (ratio) {
+      var pts = spheres.map(function (s, i) { return polar(i, total, ratio, MAX_RADIUS); });
+      var ring = document.createElementNS(svgNS, 'polygon');
+      ring.setAttribute('class', 'grid-ring');
+      ring.setAttribute('points', pointsAttr(pts));
+      gridLayer.appendChild(ring);
+    });
+
+    spheres.forEach(function (s, i) {
+      var outer = polar(i, total, 1, MAX_RADIUS);
+      var line = document.createElementNS(svgNS, 'line');
+      line.setAttribute('class', 'axis-line');
+      line.setAttribute('x1', CENTER.x); line.setAttribute('y1', CENTER.y);
+      line.setAttribute('x2', outer.x); line.setAttribute('y2', outer.y);
+      axisLayer.appendChild(line);
+
+      var iconPos = polar(i, total, 1.16, MAX_RADIUS);
+      var text = document.createElementNS(svgNS, 'text');
+      text.setAttribute('class', 'axis-icon');
+      text.setAttribute('x', iconPos.x); text.setAttribute('y', iconPos.y);
+      text.textContent = s.icon || '•';
+      iconLayer.appendChild(text);
+
+      var dot = document.createElementNS(svgNS, 'circle');
+      dot.setAttribute('class', 'vertex-dot');
+      dot.setAttribute('r', 5);
+      petalLayer.appendChild(dot);
+      petalEls.push(dot);
+    });
+  }
+
+  function animateTo(newPoints) {
+    var polygonEl = document.getElementById('valuePolygon');
+    var currentAttr = polygonEl.getAttribute('points');
+    var fromPoints = currentAttr && currentAttr.trim()
+      ? currentAttr.trim().split(' ').map(function (pair) {
+          var xy = pair.split(','); return { x: parseFloat(xy[0]), y: parseFloat(xy[1]) };
+        })
+      : newPoints.map(function () { return { x: CENTER.x, y: CENTER.y }; });
+
+    var start = performance.now();
+    var duration = 320;
+
+    function frame(now) {
+      var t = Math.min(1, (now - start) / duration);
+      var eased = 1 - Math.pow(1 - t, 3);
+      var current = fromPoints.map(function (p, i) {
+        return { x: p.x + (newPoints[i].x - p.x) * eased, y: p.y + (newPoints[i].y - p.y) * eased };
+      });
+      polygonEl.setAttribute('points', pointsAttr(current));
+      current.forEach(function (p, i) {
+        if (petalEls[i]) { petalEls[i].setAttribute('cx', p.x); petalEls[i].setAttribute('cy', p.y); }
+      });
+      if (t < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function formatScore(score) {
+    return (Math.round(score * 10) / 10).toFixed(1).replace('.', ',');
+  }
+
+  function updateBalanceCard(spheres) {
+    var avg = spheres.reduce(function (acc, s) { return acc + computeScore(s); }, 0) / spheres.length;
+    var pct = Math.round((avg / MAX_SCORE) * 100);
+    document.getElementById('avgNumber').textContent = formatScore(avg);
+    document.getElementById('avgSubText').textContent = 'среднее по ' + spheres.length + ' сферам';
+    document.getElementById('avgPercentText').textContent = pct + '%';
+    var ring = document.getElementById('avgRingProgress');
+    ring.style.strokeDasharray = RING_CIRC;
+    ring.style.strokeDashoffset = RING_CIRC * (1 - pct / 100);
+  }
+
+  function refreshSphere(index, card, scoreEl) {
+    var sphere = state.spheres[index];
+    var score = computeScore(sphere);
+    scoreEl.innerHTML = formatScore(score) + '<span>/10</span>';
+    animateTo(computePoints(state.spheres));
+    updateBalanceCard(state.spheres);
+    snapshotToday();
+    if (currentView === 'summary') renderSummary();
+  }
+
+  function buildChecklistDetail(sphere, index, card, scoreEl) {
+    var wrap = document.createElement('div');
+    sphere.items.forEach(function (item) {
+      var row = document.createElement('div');
+      row.className = 'check-row';
+
+      var box = document.createElement('div');
+      box.className = 'check-box' + (item.checked ? ' checked' : '');
+      box.textContent = item.checked ? '✓' : '';
+
+      var label = document.createElement('div');
+      label.className = 'check-label';
+      label.textContent = item.label;
+
+      row.appendChild(box);
+      row.appendChild(label);
+      row.addEventListener('click', function () {
+        item.checked = !item.checked;
+        box.classList.toggle('checked', item.checked);
+        box.textContent = item.checked ? '✓' : '';
+        refreshSphere(index, card, scoreEl);
+      });
+
+      wrap.appendChild(row);
+    });
+    return wrap;
+  }
+
+  function buildCounterDetail(sphere, index, card, scoreEl) {
+    var wrap = document.createElement('div');
+
+    if (sphere.targetNote) {
+      var note = document.createElement('p');
+      note.className = 'target-note';
+      note.textContent = sphere.targetNote;
+      wrap.appendChild(note);
+    }
+
+    sphere.items.forEach(function (item) {
+      var row = document.createElement('div');
+      row.className = 'count-row';
+
+      var label = document.createElement('div');
+      label.className = 'count-label';
+      label.textContent = item.label;
+
+      var input = document.createElement('input');
+      input.type = 'number';
+      input.inputMode = 'numeric';
+      input.min = '0';
+      input.step = '1';
+      input.className = 'count-input';
+      input.value = item.value;
+
+      input.addEventListener('input', function () {
+        var val = parseInt(input.value, 10);
+        item.value = isNaN(val) || val < 0 ? 0 : val;
+        refreshSphere(index, card, scoreEl);
+      });
+      input.addEventListener('click', function (e) { e.stopPropagation(); });
+
+      row.appendChild(label);
+      row.appendChild(input);
+      wrap.appendChild(row);
+    });
+    return wrap;
+  }
+
+  function renderList(spheres) {
+    var list = document.getElementById('spheresList');
+    list.innerHTML = '';
+
+    spheres.forEach(function (sphere, index) {
+      var card = document.createElement('div');
+      card.className = 'glass sphere-card';
+
+      var top = document.createElement('div');
+      top.className = 'sphere-top';
+
+      var icon = document.createElement('div');
+      icon.className = 'sphere-icon';
+      icon.style.background = CHIP_GRADIENTS[index % CHIP_GRADIENTS.length];
+      icon.textContent = sphere.icon || '•';
+
+      var name = document.createElement('div');
+      name.className = 'sphere-name';
+      name.textContent = sphere.name;
+
+      var score = document.createElement('div');
+      score.className = 'sphere-score';
+      score.innerHTML = formatScore(computeScore(sphere)) + '<span>/10</span>';
+
+      var chevron = document.createElement('div');
+      chevron.className = 'sphere-chevron';
+      chevron.textContent = '⌄';
+
+      top.appendChild(icon); top.appendChild(name); top.appendChild(score); top.appendChild(chevron);
+      top.addEventListener('click', function () { card.classList.toggle('expanded'); });
+
+      var slider = document.createElement('input');
+      slider.type = 'range';
+      slider.className = 'sphere-slider';
+      slider.min = 0; slider.max = MAX_SCORE; slider.step = 1;
+      slider.value = sphere.score;
+      slider.addEventListener('click', function (e) { e.stopPropagation(); });
+      slider.addEventListener('input', function () {
+        sphere.score = parseInt(slider.value, 10);
+        refreshSphere(index, card, score);
+      });
+
+      var detail = document.createElement('div');
+      detail.className = 'sphere-detail';
+      var content = sphere.type === 'counter'
+        ? buildCounterDetail(sphere, index, card, score)
+        : buildChecklistDetail(sphere, index, card, score);
+      detail.appendChild(content);
+
+      card.appendChild(top); card.appendChild(slider); card.appendChild(detail);
+      list.appendChild(card);
+    });
+  }
+
+  function renderProfile() {
+    var name = state.name || 'Татьяна';
+    document.getElementById('profileName').textContent = name;
+    document.getElementById('avatarInitial').textContent = name.charAt(0).toUpperCase();
+    var img = document.getElementById('avatarImg');
+    img.style.display = '';
+    img.src = (state.avatar || 'avatar.jpg') + '?v=' + Date.now();
+    img.alt = name;
+  }
+
+  function renderApp() {
+    renderProfile();
+    document.getElementById('updatedText').textContent = 'Обновлено ' + formatDate(state.lastUpdated);
+
+    drawStaticChart(state.spheres);
+    renderList(state.spheres);
+    updateBalanceCard(state.spheres);
+    showState('main');
+
+    var zeroPoints = state.spheres.map(function () { return { x: CENTER.x, y: CENTER.y }; });
+    document.getElementById('valuePolygon').setAttribute('points', pointsAttr(zeroPoints));
+    petalEls.forEach(function (el) { el.setAttribute('cx', CENTER.x); el.setAttribute('cy', CENTER.y); });
+
+    requestAnimationFrame(function () { animateTo(computePoints(state.spheres)); });
+
+    snapshotToday();
+  }
+
+  document.getElementById('retryBtn').addEventListener('click', fetchData);
+
+  fetchData();
+})();
+</script>
+
+</body>
+</html>
