@@ -188,9 +188,8 @@
   }
   .view-tab.active { background: #fff; color: var(--pink-500); box-shadow: var(--glass-shadow-sm); }
 
-  .period-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
   .period-tab {
-    flex: 1; text-align: center; padding: 8px 0; border-radius: 999px; font-size: 12.5px; font-weight: 700;
+    flex: 1; text-align: center; border-radius: 999px; font-weight: 700;
     color: var(--ink-soft); background: var(--glass-bg); border: 1px solid var(--glass-border); cursor: pointer;
   }
   .period-tab.active { background: var(--pink-500); color: #fff; border-color: var(--pink-500); }
@@ -205,9 +204,10 @@
   .summary-card .note { margin: 8px 0 0; font-size: 11.5px; color: var(--ink-soft); }
 
   .stat-row {
-    display: flex; align-items: center; justify-content: space-between; padding: 8px 0;
+    display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 8px 0;
     border-top: 1px solid rgba(180,160,220,0.18); font-size: 13.5px;
   }
+  .stat-row .stat-value { white-space: nowrap; }
   .stat-row:first-child { border-top: none; }
   .stat-row .stat-label { color: var(--ink); }
   .stat-row .stat-value { font-weight: 700; color: var(--pink-500); }
@@ -228,6 +228,80 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  .period-tabs { display: flex; gap: 5px; margin-bottom: 12px; }
+  .period-tab { padding: 8px 0; font-size: 12px; }
+
+  .period-caption {
+    text-align: center; font-size: 12.5px; color: var(--ink-soft); margin: 0 0 14px;
+  }
+
+  .summary-top { display: flex; gap: 10px; }
+  .summary-top .summary-card { flex: 1; padding: 16px 16px; }
+  .summary-top .num { font-size: 24px; }
+
+  .sum-sphere-head {
+    display: flex; align-items: center; gap: 9px; margin-bottom: 6px;
+  }
+  .sum-sphere-icon {
+    width: 30px; height: 30px; border-radius: 10px; display: flex; align-items: center;
+    justify-content: center; font-size: 15px; flex-shrink: 0;
+  }
+  .sum-sphere-name { font-size: 14px; font-weight: 700; color: var(--ink); flex: 1; }
+  .sum-sphere-score { font-size: 12.5px; font-weight: 700; color: var(--pink-500); }
+
+  .stat-row .stat-value.muted { color: var(--ink-soft); font-weight: 600; }
+
+  .day-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 9px 0; border-top: 1px solid rgba(180,160,220,0.18); font-size: 13.5px; cursor: pointer;
+  }
+  .day-row:first-child { border-top: none; }
+  .day-row .day-date { color: var(--ink); font-weight: 600; }
+  .day-row .day-meta { color: var(--ink-soft); font-size: 12px; text-align: right; }
+  .day-detail {
+    display: none; padding: 2px 0 10px 2px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.7;
+  }
+  .day-detail.open { display: block; }
+  .day-detail b { color: var(--ink); font-weight: 600; }
+
+  .empty-note { font-size: 13px; color: var(--ink-soft); text-align: center; padding: 6px 0 2px; }
+
+  .save-btn {
+    width: 100%; border: none; cursor: pointer; font-family: inherit;
+    background: linear-gradient(135deg, #F290BE, #E56FA5); color: #fff;
+    font-size: 15px; font-weight: 700; padding: 15px 0; border-radius: 18px;
+    box-shadow: 0 12px 26px rgba(229,111,165,0.32); margin-top: 18px;
+    transition: transform .12s ease, background .2s ease, box-shadow .2s ease;
+  }
+  .save-btn:active { transform: scale(0.98); }
+  .save-btn.done {
+    background: linear-gradient(135deg, #7FD1A8, #4FB98A);
+    box-shadow: 0 12px 26px rgba(79,185,138,0.3);
+  }
+  .save-btn[disabled] { opacity: 0.7; }
+
+  .save-note {
+    text-align: center; margin: 10px 0 0; font-size: 12px; color: var(--ink-soft); line-height: 1.5;
+  }
+  .save-note.ok { color: #2E9E6B; font-weight: 600; }
+  .save-note.warn { color: #C8794A; font-weight: 600; }
+
+  .version-note { text-align: center; margin: 18px 0 0; font-size: 11px; color: var(--ink-soft); opacity: .8; }
+
+  .save-bar {
+    position: fixed; left: 50%; transform: translateX(-50%); bottom: 14px; z-index: 20;
+    background: rgba(255,255,255,0.82); border: 1px solid var(--glass-border);
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    box-shadow: var(--glass-shadow-sm); border-radius: 999px;
+    padding: 7px 15px; font-size: 11.5px; font-weight: 600; color: var(--ink-soft);
+    opacity: 0; pointer-events: none; transition: opacity .25s ease;
+  }
+  .save-bar.show { opacity: 1; }
+  .save-bar.ok { color: #2E9E6B; }
+  .save-bar.warn { color: #C8794A; }
+
+  .storage-note { text-align: center; font-size: 11.5px; color: var(--ink-soft); margin: 14px 0 0; }
+
   .hidden { display: none !important; }
 </style>
 </head>
@@ -236,6 +310,8 @@
 <div class="bg-wash"></div>
 <div class="blob blob-a"></div>
 <div class="blob blob-b"></div>
+
+<div class="save-bar" id="saveBar"></div>
 
 <div id="app">
 
@@ -314,6 +390,11 @@
       <div class="spheres" id="spheresList"></div>
 
       <p class="hint">Двигай ползунок — так оцениваешь сферу сама; детали — по тапу</p>
+
+      <button class="save-btn" id="saveBtn">Сохранить результат</button>
+      <p class="save-note" id="saveNote">Отметки сохраняются сами, а кнопка — чтобы записать наверняка</p>
+
+      <p class="version-note" id="versionNote">версия 2 · сохранение в Telegram</p>
     </div>
 
     <div id="summaryView" class="hidden">
@@ -321,28 +402,36 @@
         <div class="period-tab active" data-period="day">День</div>
         <div class="period-tab" data-period="week">Неделя</div>
         <div class="period-tab" data-period="month">Месяц</div>
+        <div class="period-tab" data-period="year">Год</div>
+      </div>
+
+      <p class="period-caption" id="periodCaption"></p>
+
+      <div class="summary-top">
+        <div class="glass summary-card">
+          <p class="label" id="summaryAvgLabel">Средний балл</p>
+          <div class="num" id="summaryAvgNum">0,0<span>/10</span></div>
+        </div>
+        <div class="glass summary-card">
+          <p class="label" id="summaryDaysLabel">Дней с отметками</p>
+          <div class="num" id="summaryDaysNum">0</div>
+        </div>
       </div>
 
       <div class="glass summary-card">
-        <p class="label" id="summaryAvgLabel">Средний балл дня</p>
-        <div class="num" id="summaryAvgNum">0,0<span>/10</span></div>
-      </div>
-
-      <div class="glass summary-card">
-        <p class="label">Деньги в кошельке</p>
+        <p class="label">Деньги</p>
         <div class="num" id="walletNum">0 ₽</div>
         <p class="note" id="walletNote"></p>
       </div>
 
-      <div class="glass summary-card hidden" id="summaryWorkoutCard">
-        <p class="label" id="summaryWorkoutLabel">Тренировок за неделю</p>
-        <div class="num" id="summaryWorkoutNum">0</div>
+      <div id="summarySpheres"></div>
+
+      <div class="glass summary-card hidden" id="breakdownCard">
+        <p class="label" id="breakdownLabel">По дням</p>
+        <div id="breakdownList"></div>
       </div>
 
-      <div class="glass summary-card" id="summaryWorkCard">
-        <p class="label" id="summaryWorkLabel">Контент сегодня</p>
-        <div id="summaryWorkList"></div>
-      </div>
+      <p class="storage-note" id="storageNote"></p>
     </div>
   </div>
 
@@ -350,9 +439,15 @@
 
 <script>
 (function () {
-  if (window.Telegram && window.Telegram.WebApp) {
-    Telegram.WebApp.ready();
-    Telegram.WebApp.expand();
+  var tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+  if (tg) {
+    try { tg.ready(); tg.expand(); } catch (e) {}
+  }
+
+  var cloud = null;
+  if (tg && tg.CloudStorage && typeof tg.CloudStorage.setItem === 'function'
+      && typeof tg.CloudStorage.getItems === 'function' && typeof tg.CloudStorage.getKeys === 'function') {
+    cloud = tg.CloudStorage;
   }
 
   var MAX_SCORE = 10;
@@ -366,6 +461,8 @@
     'linear-gradient(135deg, #D5EAFF, #FFD2E6)',
     'linear-gradient(135deg, #E1D6FF, #D5EAFF)'
   ];
+  var MONTH_NAMES = ['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+  var MONTH_OF = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
 
   var svgNS = "http://www.w3.org/2000/svg";
   var state = { spheres: [] };
@@ -375,6 +472,7 @@
   var loadingEl = document.getElementById('loadingState');
   var errorEl = document.getElementById('errorState');
   var mainEl = document.getElementById('mainState');
+  var saveBar = document.getElementById('saveBar');
 
   function showState(name) {
     loadingEl.classList.toggle('hidden', name !== 'loading');
@@ -382,48 +480,32 @@
     mainEl.classList.toggle('hidden', name !== 'main');
   }
 
-  function fetchData() {
-    showState('loading');
-    fetch('data.json?v=' + Date.now())
-      .then(function (res) { if (!res.ok) throw new Error('bad response'); return res.json(); })
-      .then(function (data) {
-        if (!data || !Array.isArray(data.spheres) || !data.spheres.length) throw new Error('bad shape');
-        state = data;
-        renderApp();
-      })
-      .catch(function () { showState('error'); });
-  }
-
-  function formatDate(iso) {
-    try { return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }); }
-    catch (e) { return iso; }
-  }
-
-  function polar(index, total, ratio, radius) {
-    var angle = -Math.PI / 2 + index * (2 * Math.PI / total);
-    return { x: CENTER.x + radius * ratio * Math.cos(angle), y: CENTER.y + radius * ratio * Math.sin(angle) };
-  }
-
-  function pointsAttr(points) {
-    return points.map(function (p) { return p.x.toFixed(1) + ',' + p.y.toFixed(1); }).join(' ');
-  }
-
-  function computeScore(sphere) {
-    return typeof sphere.score === 'number' ? sphere.score : 0;
-  }
-
-  function computePoints(spheres) {
-    return spheres.map(function (s, i) {
-      var ratio = Math.max(0, Math.min(1, computeScore(s) / MAX_SCORE));
-      return polar(i, spheres.length, ratio, MAX_RADIUS);
-    });
-  }
-
   function pad2(n) { return n < 10 ? '0' + n : '' + n; }
   function dateKey(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
   function todayKey() { return dateKey(new Date()); }
+  function parseKey(k) {
+    var p = k.split('-');
+    return new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+  }
+  function formatDayHuman(k) {
+    var d = parseKey(k);
+    return d.getDate() + ' ' + MONTH_OF[d.getMonth()];
+  }
 
-  var storageAvailable = (function () {
+  /* ---------------- хранилище ---------------- */
+  /* days[ '2026-08-19' ] = { t: timestamp, s: {sphereId: score}, i: {'sphere.item': число} }
+     Пункты-галочки хранятся как 1, счётчики — своим числом. Нули не хранятся вовсе.
+     Всё режется на куски по 5 дней: один кусок — один ключ в CloudStorage (лимит 4096 байт на значение). */
+
+  var KEY_PREFIX = 'wheel-v2-';
+  var LS_PREFIX = 'wheelV2-';
+  var LEGACY_LS_KEY = 'wheelHistory';
+
+  var days = {};
+  var storageMode = 'none';
+  var cloudFailed = false;
+
+  var localAvailable = (function () {
     try {
       var k = '__wheel_test__';
       window.localStorage.setItem(k, '1');
@@ -432,110 +514,527 @@
     } catch (e) { return false; }
   })();
 
-  function loadHistory() {
-    if (!storageAvailable) return {};
-    try {
-      var raw = window.localStorage.getItem('wheelHistory');
-      return raw ? JSON.parse(raw) : {};
-    } catch (e) { return {}; }
+  function chunkFor(key) {
+    var day = parseInt(key.slice(8, 10), 10);
+    var part = Math.floor((day - 1) / 5) + 1;
+    return KEY_PREFIX + key.slice(0, 7) + '-p' + part;
   }
 
-  var history = loadHistory();
-
-  function saveHistory() {
-    if (!storageAvailable) return;
-    try { window.localStorage.setItem('wheelHistory', JSON.stringify(history)); } catch (e) {}
+  function chunkPayload(chunk) {
+    var out = {};
+    Object.keys(days).forEach(function (k) {
+      if (chunkFor(k) === chunk) out[k.slice(8, 10)] = days[k];
+    });
+    return JSON.stringify({ m: chunk.slice(KEY_PREFIX.length, KEY_PREFIX.length + 7), d: out });
   }
 
-  function getFinanceMoneyValue() {
-    var financeSphere = state.spheres.filter(function (s) { return s.id === 'finance'; })[0];
-    if (!financeSphere) return 0;
-    return financeSphere.items.reduce(function (sum, i) { return sum + (parseInt(i.value, 10) || 0); }, 0);
-  }
-
-  function getWorkValues() {
-    var workSphere = state.spheres.filter(function (s) { return s.id === 'work'; })[0];
-    var values = {};
-    if (workSphere) {
-      workSphere.items.forEach(function (i) { values[i.id] = parseInt(i.value, 10) || 0; });
-    }
-    return values;
-  }
-
-  function snapshotToday() {
-    var key = todayKey();
-    var avg = state.spheres.reduce(function (acc, s) { return acc + computeScore(s); }, 0) / state.spheres.length;
-    var healthSphere = state.spheres.filter(function (s) { return s.id === 'health'; })[0];
-    var workoutItem = healthSphere && healthSphere.items.filter(function (i) { return i.id === 'workout'; })[0];
-    var entry = history[key] || {};
-    entry.avgScore = avg;
-    entry.workout = !!(workoutItem && workoutItem.checked);
-    entry.money = getFinanceMoneyValue();
-    entry.work = getWorkValues();
-    history[key] = entry;
-    saveHistory();
-  }
-
-  function getWeekRange(d) {
-    var day = d.getDay();
-    var diffToMonday = day === 0 ? -6 : 1 - day;
-    var monday = new Date(d.getFullYear(), d.getMonth(), d.getDate() + diffToMonday);
-    var sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6);
-    return { start: monday, end: sunday };
-  }
-
-  function keysInRange(start, end) {
-    var keys = [];
-    var cur = new Date(start);
-    while (cur <= end) {
-      keys.push(dateKey(cur));
-      cur.setDate(cur.getDate() + 1);
-    }
-    return keys;
-  }
-
-  function aggregateRange(keys) {
-    var scores = [];
-    var workouts = 0;
-    var money = 0;
-    var work = {};
-
-    keys.forEach(function (k) {
-      var e = history[k];
-      if (!e) return;
-      if (typeof e.avgScore === 'number') scores.push(e.avgScore);
-      if (e.workout) workouts += 1;
-      if (typeof e.money === 'number') money += e.money;
-      if (e.work) {
-        Object.keys(e.work).forEach(function (id) {
-          work[id] = (work[id] || 0) + (parseInt(e.work[id], 10) || 0);
-        });
+  function readChunk(raw, into) {
+    if (!raw) return false;
+    var parsed;
+    try { parsed = JSON.parse(raw); } catch (e) { return false; }
+    if (!parsed || !parsed.m || !parsed.d) return false;
+    var changed = false;
+    Object.keys(parsed.d).forEach(function (dd) {
+      var key = parsed.m + '-' + dd;
+      var incoming = parsed.d[dd];
+      if (!incoming || typeof incoming !== 'object') return;
+      var current = into[key];
+      if (!current || (incoming.t || 0) > (current.t || 0)) {
+        into[key] = incoming;
+        changed = true;
       }
     });
+    return changed;
+  }
 
-    var avg = scores.length ? scores.reduce(function (a, b) { return a + b; }, 0) / scores.length : 0;
-    return { avg: avg, workouts: workouts, money: money, work: work };
+  function loadLocal(into) {
+    if (!localAvailable) return [];
+    var chunks = [];
+    try {
+      for (var i = 0; i < window.localStorage.length; i++) {
+        var name = window.localStorage.key(i);
+        if (name && name.indexOf(LS_PREFIX) === 0) {
+          chunks.push(name.slice(LS_PREFIX.length));
+          readChunk(window.localStorage.getItem(name), into);
+        }
+      }
+    } catch (e) {}
+    return chunks;
+  }
+
+  function writeLocal(chunk) {
+    if (!localAvailable) return;
+    try { window.localStorage.setItem(LS_PREFIX + chunk, chunkPayload(chunk)); } catch (e) {}
+  }
+
+  function migrateLegacy(into) {
+    if (!localAvailable) return false;
+    var raw;
+    try { raw = window.localStorage.getItem(LEGACY_LS_KEY); } catch (e) { return false; }
+    if (!raw) return false;
+    var old;
+    try { old = JSON.parse(raw); } catch (e) { return false; }
+    if (!old || typeof old !== 'object') return false;
+    var touched = [];
+    Object.keys(old).forEach(function (key) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(key) || into[key]) return;
+      var e = old[key];
+      var rec = { t: 1, s: {}, i: {} };
+      if (e && e.workout) rec.i['health.workout'] = 1;
+      if (e && e.work) {
+        Object.keys(e.work).forEach(function (id) {
+          var v = parseInt(e.work[id], 10) || 0;
+          if (v) rec.i['work.' + id] = v;
+        });
+      }
+      if (e && typeof e.money === 'number' && e.money > 0) rec.i['finance.salesAmount'] = e.money;
+      if (e && typeof e.avgScore === 'number' && e.avgScore > 0) rec.s.__avg = Math.round(e.avgScore * 10) / 10;
+      if (Object.keys(rec.i).length || rec.s.__avg) {
+        into[key] = rec;
+        touched.push(chunkFor(key));
+      }
+    });
+    if (!touched.length) return false;
+    touched.filter(function (c, i, arr) { return arr.indexOf(c) === i; }).forEach(writeLocal);
+    return true;
+  }
+
+  function setSaveStatus(kind) {
+    if (!saveBar) return;
+    saveBar.classList.remove('ok', 'warn');
+    if (kind === 'saving') {
+      saveBar.textContent = 'Сохраняю…';
+      saveBar.classList.add('show');
+    } else if (kind === 'cloud') {
+      saveBar.textContent = 'Сохранено в Telegram ✓';
+      saveBar.classList.add('show', 'ok');
+      setTimeout(function () { saveBar.classList.remove('show'); }, 1600);
+    } else if (kind === 'local') {
+      saveBar.textContent = 'Сохранено на телефоне ✓';
+      saveBar.classList.add('show', 'ok');
+      setTimeout(function () { saveBar.classList.remove('show'); }, 1600);
+    } else if (kind === 'fail') {
+      saveBar.textContent = 'Записала только на телефон';
+      saveBar.classList.add('show', 'warn');
+      setTimeout(function () { saveBar.classList.remove('show'); }, 2600);
+    }
+  }
+
+  function renderStorageNote() {
+    var el = document.getElementById('storageNote');
+    if (!el) return;
+    if (storageMode === 'cloud' && !cloudFailed) {
+      el.textContent = 'Отметки хранятся в Telegram и привяжутся к твоему аккаунту — не потеряются при смене телефона';
+    } else if (localAvailable) {
+      el.textContent = 'Telegram-хранилище недоступно, отметки лежат в памяти этого браузера';
+    } else {
+      el.textContent = 'Хранилище недоступно — отметки не сохранятся';
+    }
+  }
+
+  var dirtyChunks = {};
+  var saveTimer = null;
+
+  function persist(dayKey) {
+    var chunk = chunkFor(dayKey);
+    writeLocal(chunk);
+    dirtyChunks[chunk] = true;
+    setSaveStatus('saving');
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(flushCloud, 700);
+  }
+
+  function flushCloud(cb) {
+    if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+    var chunks = Object.keys(dirtyChunks);
+    dirtyChunks = {};
+    if (!cloud) {
+      var where = localAvailable ? 'local' : 'fail';
+      setSaveStatus(where);
+      if (cb) cb(where);
+      return;
+    }
+    if (!chunks.length) chunks = [chunkFor(activeDay)];
+    var pending = chunks.length;
+    var failed = false;
+    function step() {
+      pending -= 1;
+      if (pending > 0) return;
+      cloudFailed = failed;
+      setSaveStatus(failed ? 'fail' : 'cloud');
+      renderStorageNote();
+      if (cb) cb(failed ? 'fail' : 'cloud');
+    }
+    chunks.forEach(function (chunk) {
+      var payload = chunkPayload(chunk);
+      if (payload.length > 4000) payload = shrinkPayload(chunk);
+      try {
+        cloud.setItem(chunk, payload, function (err) {
+          if (err) failed = true;
+          step();
+        });
+      } catch (e) {
+        failed = true;
+        step();
+      }
+    });
+  }
+
+  /* если кусок вдруг перерос лимит Telegram — жертвуем оценками сфер, отметки важнее */
+  function shrinkPayload(chunk) {
+    var out = {};
+    Object.keys(days).forEach(function (k) {
+      if (chunkFor(k) !== chunk) return;
+      var rec = days[k];
+      out[k.slice(8, 10)] = { t: rec.t, i: rec.i || {} };
+    });
+    return JSON.stringify({ m: chunk.slice(KEY_PREFIX.length, KEY_PREFIX.length + 7), d: out });
+  }
+
+  function bootstrapStorage(done) {
+    var localChunks = loadLocal(days);
+    var migrated = migrateLegacy(days);
+    if (migrated) localChunks = loadLocal({});
+
+    if (!cloud) {
+      storageMode = localAvailable ? 'local' : 'none';
+      done();
+      return;
+    }
+    storageMode = 'cloud';
+
+    var finished = false;
+    function finish() {
+      if (finished) return;
+      finished = true;
+      done();
+    }
+    var guard = setTimeout(function () { cloudFailed = true; finish(); }, 6000);
+
+    cloud.getKeys(function (err, keys) {
+      if (err || !keys) {
+        clearTimeout(guard);
+        cloudFailed = true;
+        finish();
+        return;
+      }
+      var mine = keys.filter(function (k) { return k.indexOf(KEY_PREFIX) === 0; });
+      if (!mine.length) {
+        clearTimeout(guard);
+        pushLocalToCloud(localChunks);
+        finish();
+        return;
+      }
+      var batches = [];
+      for (var i = 0; i < mine.length; i += 15) batches.push(mine.slice(i, i + 15));
+      var left = batches.length;
+      batches.forEach(function (batch) {
+        cloud.getItems(batch, function (e2, items) {
+          if (!e2 && items) {
+            Object.keys(items).forEach(function (name) { readChunk(items[name], days); });
+          } else if (e2) {
+            cloudFailed = true;
+          }
+          left -= 1;
+          if (left === 0) {
+            clearTimeout(guard);
+            /* локальные куски, которых нет в облаке или которые новее, — отправляем наверх */
+            pushLocalToCloud(localChunks.filter(function (c) { return true; }));
+            finish();
+          }
+        });
+      });
+    });
+  }
+
+  function pushLocalToCloud(chunks) {
+    if (!cloud || !chunks || !chunks.length) return;
+    chunks.filter(function (c, i, arr) { return arr.indexOf(c) === i; }).forEach(function (chunk) {
+      var payload = chunkPayload(chunk);
+      if (payload.length > 4000) payload = shrinkPayload(chunk);
+      try { cloud.setItem(chunk, payload, function () {}); } catch (e) {}
+    });
+  }
+
+  /* ---------------- состояние дня ---------------- */
+
+  var itemMeta = {};
+  var activeDay = todayKey();
+
+  function buildItemMeta() {
+    itemMeta = {};
+    state.spheres.forEach(function (sphere) {
+      (sphere.items || []).forEach(function (item) {
+        itemMeta[sphere.id + '.' + item.id] = {
+          sphereId: sphere.id, sphereName: sphere.name, icon: sphere.icon,
+          itemId: item.id, label: item.label, type: sphere.type
+        };
+      });
+    });
+  }
+
+  function lastScoresBefore(key) {
+    var keys = Object.keys(days).filter(function (k) { return k < key && days[k] && days[k].s; }).sort();
+    if (!keys.length) return null;
+    return days[keys[keys.length - 1]].s;
+  }
+
+  function applyDay(key) {
+    var rec = days[key];
+    var scores = (rec && rec.s) ? rec.s : lastScoresBefore(key);
+    state.spheres.forEach(function (sphere) {
+      var s = scores && typeof scores[sphere.id] === 'number' ? scores[sphere.id] : sphere.defaultScore;
+      sphere.score = typeof s === 'number' ? s : 5;
+      (sphere.items || []).forEach(function (item) {
+        var v = (rec && rec.i) ? rec.i[sphere.id + '.' + item.id] : 0;
+        v = parseInt(v, 10) || 0;
+        if (sphere.type === 'counter') item.value = v;
+        else item.checked = v > 0;
+      });
+    });
+  }
+
+  function captureDay() {
+    var key = activeDay;
+    var rec = { t: Date.now(), s: {}, i: {} };
+    state.spheres.forEach(function (sphere) {
+      rec.s[sphere.id] = computeScore(sphere);
+      (sphere.items || []).forEach(function (item) {
+        var k = sphere.id + '.' + item.id;
+        if (sphere.type === 'counter') {
+          var v = parseInt(item.value, 10) || 0;
+          if (v > 0) rec.i[k] = v;
+        } else if (item.checked) {
+          rec.i[k] = 1;
+        }
+      });
+    });
+    days[key] = rec;
+    persist(key);
+  }
+
+  /* ---------------- сводка ---------------- */
+
+  function dayScoreOf(rec) {
+    if (!rec) return null;
+    if (rec.s && typeof rec.s.__avg === 'number') return rec.s.__avg;
+    if (!rec.s) return null;
+    var vals = state.spheres.map(function (s) { return rec.s[s.id]; })
+      .filter(function (v) { return typeof v === 'number'; });
+    if (!vals.length) return null;
+    return vals.reduce(function (a, b) { return a + b; }, 0) / vals.length;
+  }
+
+  function marksCount(rec) {
+    return rec && rec.i ? Object.keys(rec.i).length : 0;
+  }
+
+  function moneyOf(rec) {
+    if (!rec || !rec.i) return 0;
+    var sum = 0;
+    Object.keys(rec.i).forEach(function (k) {
+      var meta = itemMeta[k];
+      if (meta && meta.sphereId === 'finance') sum += parseInt(rec.i[k], 10) || 0;
+    });
+    return sum;
+  }
+
+  function aggregate(fromKey, toKey) {
+    var res = { dayKeys: [], items: {}, money: 0, scoreSum: 0, scoreDays: 0, byMonth: {} };
+    Object.keys(days).sort().forEach(function (k) {
+      if (k < fromKey || k > toKey) return;
+      var rec = days[k];
+      if (!rec || (!marksCount(rec) && dayScoreOf(rec) === null)) return;
+      res.dayKeys.push(k);
+      var score = dayScoreOf(rec);
+      if (score !== null) { res.scoreSum += score; res.scoreDays += 1; }
+      var money = moneyOf(rec);
+      res.money += money;
+      var month = k.slice(0, 7);
+      if (!res.byMonth[month]) res.byMonth[month] = { days: 0, money: 0, marks: 0 };
+      res.byMonth[month].days += 1;
+      res.byMonth[month].money += money;
+      res.byMonth[month].marks += marksCount(rec);
+      Object.keys(rec.i || {}).forEach(function (ik) {
+        var val = parseInt(rec.i[ik], 10) || 0;
+        if (!val) return;
+        var meta = itemMeta[ik];
+        var add = (meta && meta.type === 'counter') ? val : 1;
+        res.items[ik] = (res.items[ik] || 0) + add;
+      });
+    });
+    res.avg = res.scoreDays ? res.scoreSum / res.scoreDays : 0;
+    return res;
+  }
+
+  function liveDayAggregate() {
+    var res = { dayKeys: [], items: {}, money: 0, avg: 0, byMonth: {} };
+    var sum = 0;
+    state.spheres.forEach(function (sphere) {
+      sum += computeScore(sphere);
+      (sphere.items || []).forEach(function (item) {
+        var k = sphere.id + '.' + item.id;
+        if (sphere.type === 'counter') {
+          var v = parseInt(item.value, 10) || 0;
+          if (v > 0) res.items[k] = v;
+          if (sphere.id === 'finance') res.money += v;
+        } else if (item.checked) {
+          res.items[k] = 1;
+        }
+      });
+    });
+    res.avg = state.spheres.length ? sum / state.spheres.length : 0;
+    if (Object.keys(res.items).length || days[activeDay]) res.dayKeys.push(activeDay);
+    return res;
   }
 
   var currentView = 'wheel';
   var currentPeriod = 'day';
 
-  function renderWorkList(values) {
-    var workSphere = state.spheres.filter(function (s) { return s.id === 'work'; })[0];
-    var list = document.getElementById('summaryWorkList');
+  function formatMoney(n) { return (n || 0).toLocaleString('ru-RU') + ' ₽'; }
+  function formatScore(score) { return (Math.round(score * 10) / 10).toFixed(1).replace('.', ','); }
+
+  function plural(n, one, few, many) {
+    var m10 = n % 10, m100 = n % 100;
+    if (m10 === 1 && m100 !== 11) return one;
+    if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return few;
+    return many;
+  }
+
+  function renderSphereStats(agg, isDay) {
+    var wrap = document.getElementById('summarySpheres');
+    wrap.innerHTML = '';
+    state.spheres.forEach(function (sphere, index) {
+      var card = document.createElement('div');
+      card.className = 'glass summary-card';
+
+      var head = document.createElement('div');
+      head.className = 'sum-sphere-head';
+      var icon = document.createElement('div');
+      icon.className = 'sum-sphere-icon';
+      icon.style.background = CHIP_GRADIENTS[index % CHIP_GRADIENTS.length];
+      icon.textContent = sphere.icon || '•';
+      var name = document.createElement('div');
+      name.className = 'sum-sphere-name';
+      name.textContent = sphere.name;
+      head.appendChild(icon); head.appendChild(name);
+
+      if (sphere.type === 'counter') {
+        var total = 0;
+        (sphere.items || []).forEach(function (item) {
+          total += agg.items[sphere.id + '.' + item.id] || 0;
+        });
+        var badge = document.createElement('div');
+        badge.className = 'sum-sphere-score';
+        badge.textContent = sphere.id === 'finance' ? formatMoney(total) : ('всего ' + total);
+        head.appendChild(badge);
+      }
+      card.appendChild(head);
+
+      (sphere.items || []).forEach(function (item) {
+        var key = sphere.id + '.' + item.id;
+        var val = agg.items[key] || 0;
+        var row = document.createElement('div');
+        row.className = 'stat-row';
+        var label = document.createElement('div');
+        label.className = 'stat-label';
+        label.textContent = item.label;
+        var value = document.createElement('div');
+        value.className = 'stat-value' + (val ? '' : ' muted');
+
+        if (sphere.type === 'counter') {
+          value.textContent = sphere.id === 'finance' ? formatMoney(val) : String(val);
+        } else if (isDay) {
+          value.textContent = val ? '✓' : '—';
+        } else {
+          value.textContent = val + ' ' + plural(val, 'день', 'дня', 'дней');
+        }
+        row.appendChild(label); row.appendChild(value);
+        card.appendChild(row);
+      });
+
+      wrap.appendChild(card);
+    });
+  }
+
+  function describeDay(rec) {
+    if (!rec || !rec.i) return '';
+    var parts = [];
+    state.spheres.forEach(function (sphere) {
+      (sphere.items || []).forEach(function (item) {
+        var v = parseInt(rec.i[sphere.id + '.' + item.id], 10) || 0;
+        if (!v) return;
+        if (sphere.type === 'counter') {
+          parts.push('<b>' + item.label + '</b> — ' + (sphere.id === 'finance' ? formatMoney(v) : v));
+        } else {
+          parts.push('<b>' + item.label + '</b>');
+        }
+      });
+    });
+    return parts.length ? parts.join('<br>') : 'В этот день отметок не было';
+  }
+
+  function renderBreakdown(agg, mode) {
+    var card = document.getElementById('breakdownCard');
+    var label = document.getElementById('breakdownLabel');
+    var list = document.getElementById('breakdownList');
     list.innerHTML = '';
-    if (!workSphere) return;
-    workSphere.items.forEach(function (item) {
+
+    if (mode === 'none') { card.classList.add('hidden'); return; }
+    card.classList.remove('hidden');
+
+    if (mode === 'months') {
+      label.textContent = 'По месяцам';
+      var months = Object.keys(agg.byMonth).sort();
+      if (!months.length) {
+        list.innerHTML = '<p class="empty-note">Пока пусто — отметки появятся здесь</p>';
+        return;
+      }
+      months.forEach(function (m) {
+        var info = agg.byMonth[m];
+        var row = document.createElement('div');
+        row.className = 'stat-row';
+        var lbl = document.createElement('div');
+        lbl.className = 'stat-label';
+        lbl.textContent = MONTH_NAMES[parseInt(m.slice(5, 7), 10) - 1];
+        var val = document.createElement('div');
+        val.className = 'stat-value';
+        val.textContent = info.days + ' ' + plural(info.days, 'день', 'дня', 'дней')
+          + (info.money ? ' · ' + formatMoney(info.money) : '');
+        row.appendChild(lbl); row.appendChild(val);
+        list.appendChild(row);
+      });
+      return;
+    }
+
+    label.textContent = 'По дням';
+    var keys = agg.dayKeys.slice().sort().reverse();
+    if (!keys.length) {
+      list.innerHTML = '<p class="empty-note">Пока пусто — отметки появятся здесь</p>';
+      return;
+    }
+    keys.forEach(function (k) {
+      var rec = days[k];
       var row = document.createElement('div');
-      row.className = 'stat-row';
-      var label = document.createElement('div');
-      label.className = 'stat-label';
-      label.textContent = item.label;
-      var value = document.createElement('div');
-      value.className = 'stat-value';
-      value.textContent = values[item.id] || 0;
-      row.appendChild(label); row.appendChild(value);
+      row.className = 'day-row';
+      var date = document.createElement('div');
+      date.className = 'day-date';
+      date.textContent = formatDayHuman(k);
+      var meta = document.createElement('div');
+      meta.className = 'day-meta';
+      var money = moneyOf(rec);
+      var n = marksCount(rec);
+      meta.textContent = n + ' ' + plural(n, 'отметка', 'отметки', 'отметок')
+        + (money ? ' · ' + formatMoney(money) : '');
+      row.appendChild(date); row.appendChild(meta);
+
+      var detail = document.createElement('div');
+      detail.className = 'day-detail';
+      detail.innerHTML = describeDay(rec);
+
+      row.addEventListener('click', function () { detail.classList.toggle('open'); });
       list.appendChild(row);
+      list.appendChild(detail);
     });
   }
 
@@ -543,59 +1042,62 @@
     var now = new Date();
     var avgLabel = document.getElementById('summaryAvgLabel');
     var avgNum = document.getElementById('summaryAvgNum');
+    var daysLabel = document.getElementById('summaryDaysLabel');
+    var daysNum = document.getElementById('summaryDaysNum');
     var walletNum = document.getElementById('walletNum');
     var walletNote = document.getElementById('walletNote');
-    var workoutCard = document.getElementById('summaryWorkoutCard');
-    var workoutLabel = document.getElementById('summaryWorkoutLabel');
-    var workoutNum = document.getElementById('summaryWorkoutNum');
-    var workLabel = document.getElementById('summaryWorkLabel');
+    var caption = document.getElementById('periodCaption');
+
+    var agg, breakdown, captionText, avgText, daysText;
 
     if (currentPeriod === 'day') {
-      var todayEntry = history[todayKey()] || {};
-      var liveAvg = state.spheres.reduce(function (acc, s) { return acc + computeScore(s); }, 0) / state.spheres.length;
-      var todayMoney = typeof todayEntry.money === 'number' ? todayEntry.money : getFinanceMoneyValue();
-      avgLabel.textContent = 'Средний балл дня';
-      avgNum.innerHTML = formatScore(typeof todayEntry.avgScore === 'number' ? todayEntry.avgScore : liveAvg) + '<span>/10</span>';
-      walletNum.textContent = todayMoney.toLocaleString('ru-RU') + ' ₽';
-      walletNote.textContent = 'Сегодня — сумма по всем курсам в Финансах';
-      workoutCard.classList.add('hidden');
-      workLabel.textContent = 'Контент сегодня';
-      renderWorkList(todayEntry.work || getWorkValues());
-      return;
-    }
-
-    if (currentPeriod === 'week') {
-      var wRange = getWeekRange(now);
-      var wKeys = keysInRange(wRange.start, wRange.end);
-      var wAgg = aggregateRange(wKeys);
-      avgLabel.textContent = 'Средний балл за неделю';
-      avgNum.innerHTML = formatScore(wAgg.avg) + '<span>/10</span>';
-      walletNum.textContent = wAgg.money.toLocaleString('ru-RU') + ' ₽';
-      walletNote.textContent = 'Сумма продаж за эту неделю';
-      workoutCard.classList.remove('hidden');
-      workoutLabel.textContent = 'Тренировок за неделю';
-      workoutNum.textContent = wAgg.workouts;
-      workLabel.textContent = 'Контент за неделю';
-      renderWorkList(wAgg.work);
-      return;
-    }
-
-    if (currentPeriod === 'month') {
+      agg = liveDayAggregate();
+      captionText = 'Сегодня, ' + formatDayHuman(activeDay);
+      avgText = 'Средний балл дня';
+      daysText = 'Отметок сегодня';
+      daysNum.textContent = Object.keys(agg.items).length;
+      walletNote.textContent = 'Сумма по всем курсам за сегодня';
+      breakdown = 'none';
+    } else if (currentPeriod === 'week') {
+      var day = now.getDay();
+      var monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (day === 0 ? -6 : 1 - day));
+      var sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6);
+      agg = aggregate(dateKey(monday), dateKey(sunday));
+      captionText = 'Неделя ' + formatDayHuman(dateKey(monday)) + ' — ' + formatDayHuman(dateKey(sunday));
+      avgText = 'Средний балл недели';
+      daysText = 'Дней с отметками';
+      daysNum.textContent = agg.dayKeys.length;
+      walletNote.textContent = 'Сумма по всем курсам за неделю';
+      breakdown = 'days';
+    } else if (currentPeriod === 'month') {
       var mStart = new Date(now.getFullYear(), now.getMonth(), 1);
       var mEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-      var mKeys = keysInRange(mStart, mEnd);
-      var mAgg = aggregateRange(mKeys);
-      avgLabel.textContent = 'Средний балл за месяц';
-      avgNum.innerHTML = formatScore(mAgg.avg) + '<span>/10</span>';
-      walletNum.textContent = mAgg.money.toLocaleString('ru-RU') + ' ₽';
-      walletNote.textContent = 'Сумма продаж за этот месяц';
-      workoutCard.classList.remove('hidden');
-      workoutLabel.textContent = 'Тренировок за месяц';
-      workoutNum.textContent = mAgg.workouts;
-      workLabel.textContent = 'Контент за месяц';
-      renderWorkList(mAgg.work);
-      return;
+      agg = aggregate(dateKey(mStart), dateKey(mEnd));
+      captionText = MONTH_NAMES[now.getMonth()].charAt(0).toUpperCase() + MONTH_NAMES[now.getMonth()].slice(1) + ' ' + now.getFullYear();
+      avgText = 'Средний балл месяца';
+      daysText = 'Дней с отметками';
+      daysNum.textContent = agg.dayKeys.length;
+      walletNote.textContent = 'Сумма по всем курсам за месяц';
+      breakdown = 'days';
+    } else {
+      agg = aggregate(now.getFullYear() + '-01-01', now.getFullYear() + '-12-31');
+      captionText = now.getFullYear() + ' год — что уже сделано';
+      avgText = 'Средний балл года';
+      daysText = 'Дней с отметками';
+      daysNum.textContent = agg.dayKeys.length;
+      walletNote.textContent = 'Сумма по всем курсам за год';
+      breakdown = 'months';
     }
+
+    caption.textContent = captionText;
+    avgLabel.textContent = avgText;
+    daysLabel.textContent = daysText;
+    avgNum.innerHTML = formatScore(agg.avg) + '<span>/10</span>';
+    walletNum.textContent = formatMoney(agg.money);
+
+    renderSphereStats(agg, currentPeriod === 'day');
+    renderBreakdown(agg, breakdown);
+    renderStorageNote();
   }
 
   document.querySelectorAll('.view-tab').forEach(function (tab) {
@@ -617,6 +1119,28 @@
       renderSummary();
     });
   });
+
+  /* ---------------- колесо ---------------- */
+
+  function polar(index, total, ratio, radius) {
+    var angle = -Math.PI / 2 + index * (2 * Math.PI / total);
+    return { x: CENTER.x + radius * ratio * Math.cos(angle), y: CENTER.y + radius * ratio * Math.sin(angle) };
+  }
+
+  function pointsAttr(points) {
+    return points.map(function (p) { return p.x.toFixed(1) + ',' + p.y.toFixed(1); }).join(' ');
+  }
+
+  function computeScore(sphere) {
+    return typeof sphere.score === 'number' ? sphere.score : 0;
+  }
+
+  function computePoints(spheres) {
+    return spheres.map(function (s, i) {
+      var ratio = Math.max(0, Math.min(1, computeScore(s) / MAX_SCORE));
+      return polar(i, spheres.length, ratio, MAX_RADIUS);
+    });
+  }
 
   function drawStaticChart(spheres) {
     var gridLayer = document.getElementById('gridLayer');
@@ -667,6 +1191,10 @@
         })
       : newPoints.map(function () { return { x: CENTER.x, y: CENTER.y }; });
 
+    if (fromPoints.length !== newPoints.length) {
+      fromPoints = newPoints.map(function () { return { x: CENTER.x, y: CENTER.y }; });
+    }
+
     var start = performance.now();
     var duration = 320;
 
@@ -685,10 +1213,6 @@
     requestAnimationFrame(frame);
   }
 
-  function formatScore(score) {
-    return (Math.round(score * 10) / 10).toFixed(1).replace('.', ',');
-  }
-
   function updateBalanceCard(spheres) {
     var avg = spheres.reduce(function (acc, s) { return acc + computeScore(s); }, 0) / spheres.length;
     var pct = Math.round((avg / MAX_SCORE) * 100);
@@ -702,11 +1226,10 @@
 
   function refreshSphere(index, card, scoreEl) {
     var sphere = state.spheres[index];
-    var score = computeScore(sphere);
-    scoreEl.innerHTML = formatScore(score) + '<span>/10</span>';
+    scoreEl.innerHTML = formatScore(computeScore(sphere)) + '<span>/10</span>';
     animateTo(computePoints(state.spheres));
     updateBalanceCard(state.spheres);
-    snapshotToday();
+    captureDay();
     if (currentView === 'summary') renderSummary();
   }
 
@@ -844,7 +1367,7 @@
 
   function renderApp() {
     renderProfile();
-    document.getElementById('updatedText').textContent = 'Обновлено ' + formatDate(state.lastUpdated);
+    document.getElementById('updatedText').textContent = 'Сегодня, ' + formatDayHuman(activeDay);
 
     drawStaticChart(state.spheres);
     renderList(state.spheres);
@@ -856,9 +1379,108 @@
     petalEls.forEach(function (el) { el.setAttribute('cx', CENTER.x); el.setAttribute('cy', CENTER.y); });
 
     requestAnimationFrame(function () { animateTo(computePoints(state.spheres)); });
-
-    snapshotToday();
+    renderStorageNote();
   }
+
+  /* смена суток на открытом приложении: новый день начинается с чистого листа */
+  setInterval(function () {
+    var key = todayKey();
+    if (key === activeDay) return;
+    activeDay = key;
+    applyDay(activeDay);
+    renderApp();
+    if (currentView === 'summary') renderSummary();
+  }, 30000);
+
+  function fetchData() {
+    showState('loading');
+    fetch('data.json?v=' + Date.now())
+      .then(function (res) { if (!res.ok) throw new Error('bad response'); return res.json(); })
+      .then(function (data) {
+        if (!data || !Array.isArray(data.spheres) || !data.spheres.length) throw new Error('bad shape');
+        state = data;
+        /* значения из data.json — только заготовка структуры; настоящие данные лежат в хранилище */
+        state.spheres.forEach(function (sphere) {
+          sphere.defaultScore = typeof sphere.score === 'number' ? sphere.score : 5;
+        });
+        buildItemMeta();
+        activeDay = todayKey();
+        bootstrapStorage(function () {
+          applyDay(activeDay);
+          renderApp();
+        });
+      })
+      .catch(function () { showState('error'); });
+  }
+
+  /* кнопка «Сохранить результат»: пишет день сразу, не дожидаясь автосохранения */
+  var saveBtn = document.getElementById('saveBtn');
+  var saveNote = document.getElementById('saveNote');
+  var saveBtnTimer = null;
+
+  function markCount() {
+    var n = 0;
+    state.spheres.forEach(function (sphere) {
+      (sphere.items || []).forEach(function (item) {
+        if (sphere.type === 'counter') { if ((parseInt(item.value, 10) || 0) > 0) n += 1; }
+        else if (item.checked) n += 1;
+      });
+    });
+    return n;
+  }
+
+  if (saveBtn) {
+    saveBtn.addEventListener('click', function () {
+      if (!state.spheres.length) return;
+      captureDay();
+      dirtyChunks[chunkFor(activeDay)] = true;
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Сохраняю…';
+      if (tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred) {
+        try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
+      }
+      flushCloud(function (where) {
+        var n = markCount();
+        saveBtn.disabled = false;
+        saveNote.classList.remove('ok', 'warn');
+        if (where === 'cloud') {
+          saveBtn.textContent = 'Сохранено ✓';
+          saveBtn.classList.add('done');
+          saveNote.classList.add('ok');
+          saveNote.textContent = formatDayHuman(activeDay) + ' — записано в Telegram, ' + n + ' ' + plural(n, 'отметка', 'отметки', 'отметок');
+          if (tg && tg.HapticFeedback && tg.HapticFeedback.notificationOccurred) {
+            try { tg.HapticFeedback.notificationOccurred('success'); } catch (e) {}
+          }
+        } else if (where === 'local') {
+          saveBtn.textContent = 'Сохранено ✓';
+          saveBtn.classList.add('done');
+          saveNote.classList.add('ok');
+          saveNote.textContent = formatDayHuman(activeDay) + ' — записано на телефоне, ' + n + ' ' + plural(n, 'отметка', 'отметки', 'отметок');
+        } else {
+          saveBtn.textContent = 'Сохранить результат';
+          saveNote.classList.add('warn');
+          saveNote.textContent = 'Telegram не принял запись, отметки лежат на телефоне. Открой приложение кнопкой в боте и нажми ещё раз';
+        }
+        if (saveBtnTimer) clearTimeout(saveBtnTimer);
+        saveBtnTimer = setTimeout(function () {
+          saveBtn.textContent = 'Сохранить результат';
+          saveBtn.classList.remove('done');
+          saveNote.classList.remove('ok', 'warn');
+          saveNote.textContent = 'Отметки сохраняются сами, а кнопка — чтобы записать наверняка';
+        }, 4000);
+      });
+    });
+  }
+
+  /* приложение сворачивают или закрывают — дописываем не дожидаясь паузы */
+  function flushNow() {
+    if (Object.keys(dirtyChunks).length) flushCloud();
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') flushNow();
+  });
+  window.addEventListener('pagehide', flushNow);
+  window.addEventListener('blur', flushNow);
 
   document.getElementById('retryBtn').addEventListener('click', fetchData);
 

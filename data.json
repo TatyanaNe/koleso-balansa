@@ -1,6 +1,6 @@
 {
   "name": "Татьяна",
-  "lastUpdated": "2026-08-18",
+  "lastUpdated": "2026-08-19",
   "spheres": [
     {
       "id": "health",
@@ -9,11 +9,31 @@
       "score": 5,
       "type": "checklist",
       "items": [
-        { "id": "workout", "label": "Тренировка", "checked": false },
-        { "id": "vibro", "label": "Виброплатформа", "checked": false },
-        { "id": "supplementsMorning", "label": "Бады утро", "checked": false },
-        { "id": "supplementsDay", "label": "Бады день", "checked": false },
-        { "id": "supplementsEvening", "label": "Бады вечер", "checked": false }
+        {
+          "id": "workout",
+          "label": "Тренировка",
+          "checked": false
+        },
+        {
+          "id": "vibro",
+          "label": "Виброплатформа",
+          "checked": false
+        },
+        {
+          "id": "supplementsMorning",
+          "label": "Бады утро",
+          "checked": false
+        },
+        {
+          "id": "supplementsDay",
+          "label": "Бады день",
+          "checked": false
+        },
+        {
+          "id": "supplementsEvening",
+          "label": "Бады вечер",
+          "checked": false
+        }
       ]
     },
     {
@@ -24,12 +44,36 @@
       "type": "counter",
       "targetNote": "Сколько выпустила сегодня. Для сторис и шопс ставь 1, если было",
       "items": [
-        { "id": "reels", "label": "Рилс, шт", "value": 0 },
-        { "id": "carousels", "label": "Карусели, шт", "value": 0 },
-        { "id": "stories", "label": "Сторис", "value": 0 },
-        { "id": "shops", "label": "Шопс", "value": 0 },
-        { "id": "clips", "label": "Клип, шт", "value": 0 },
-        { "id": "posts", "label": "Пост, шт", "value": 0 }
+        {
+          "id": "reels",
+          "label": "Рилс, шт",
+          "value": 0
+        },
+        {
+          "id": "carousels",
+          "label": "Карусели, шт",
+          "value": 0
+        },
+        {
+          "id": "stories",
+          "label": "Сторис",
+          "value": 0
+        },
+        {
+          "id": "shops",
+          "label": "Шопс",
+          "value": 0
+        },
+        {
+          "id": "clips",
+          "label": "Клип, шт",
+          "value": 0
+        },
+        {
+          "id": "posts",
+          "label": "Пост, шт",
+          "value": 0
+        }
       ]
     },
     {
@@ -40,11 +84,36 @@
       "type": "counter",
       "targetNote": "Сколько получила сегодня по каждому курсу, в рублях",
       "items": [
-        { "id": "salesAmount", "label": "Курс «Цветы с нуля»", "value": 0 },
-        { "id": "zavitki", "label": "Курс «Завитки»", "value": 0 },
-        { "id": "tulipsSelf", "label": "Тюльпаны самостоятельно", "value": 0 },
-        { "id": "tulipsSupport", "label": "Тюльпаны с поддержкой", "value": 0 },
-        { "id": "moti", "label": "Курс «Моти»", "value": 0 }
+        {
+          "id": "salesAmount",
+          "label": "Курс «Цветы с нуля»",
+          "value": 0
+        },
+        {
+          "id": "zavitki",
+          "label": "Курс «Завитки»",
+          "value": 0
+        },
+        {
+          "id": "tulipsSelf",
+          "label": "Тюльпаны самостоятельно",
+          "value": 0
+        },
+        {
+          "id": "tulipsSupport",
+          "label": "Тюльпаны с поддержкой",
+          "value": 0
+        },
+        {
+          "id": "moti",
+          "label": "Курс «Моти»",
+          "value": 0
+        },
+        {
+          "id": "dessertsOrder",
+          "label": "Десерты на заказ",
+          "value": 0
+        }
       ]
     },
     {
@@ -54,9 +123,21 @@
       "score": 5,
       "type": "checklist",
       "items": [
-        { "id": "walk", "label": "Прогулка", "checked": false },
-        { "id": "eatingOut", "label": "Еда вне дома с семьёй", "checked": false },
-        { "id": "visit", "label": "Была в гостях", "checked": false }
+        {
+          "id": "walk",
+          "label": "Прогулка",
+          "checked": false
+        },
+        {
+          "id": "eatingOut",
+          "label": "Еда вне дома с семьёй",
+          "checked": false
+        },
+        {
+          "id": "visit",
+          "label": "Была в гостях",
+          "checked": false
+        }
       ]
     },
     {
@@ -66,10 +147,26 @@
       "score": 5,
       "type": "checklist",
       "items": [
-        { "id": "flowers", "label": "Цветы", "checked": false },
-        { "id": "drawing", "label": "Рисую", "checked": false },
-        { "id": "beads", "label": "Бусины", "checked": false },
-        { "id": "dance", "label": "Танцы", "checked": false }
+        {
+          "id": "flowers",
+          "label": "Цветы",
+          "checked": false
+        },
+        {
+          "id": "drawing",
+          "label": "Рисую",
+          "checked": false
+        },
+        {
+          "id": "beads",
+          "label": "Бусины",
+          "checked": false
+        },
+        {
+          "id": "dance",
+          "label": "Танцы",
+          "checked": false
+        }
       ]
     },
     {
@@ -79,7 +176,11 @@
       "score": 5,
       "type": "checklist",
       "items": [
-        { "id": "materials", "label": "Обучающие материалы просмотрены", "checked": false }
+        {
+          "id": "materials",
+          "label": "Обучающие материалы просмотрены",
+          "checked": false
+        }
       ]
     }
   ]
