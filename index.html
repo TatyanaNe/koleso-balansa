@@ -1382,15 +1382,43 @@
     renderStorageNote();
   }
 
-  /* смена суток на открытом приложении: новый день начинается с чистого листа */
-  setInterval(function () {
+  /* смена суток: новый день начинается с чистого листа.
+     Телефон усыпляет свёрнутый мини-апп, и таймеры внутри него не идут — поэтому,
+     кроме таймера на полночь, день пересчитывается каждый раз, когда приложение просыпается. */
+  var midnightTimer = null;
+
+  function checkDayRollover() {
     var key = todayKey();
     if (key === activeDay) return;
+    flushNow();
     activeDay = key;
     applyDay(activeDay);
     renderApp();
     if (currentView === 'summary') renderSummary();
-  }, 30000);
+  }
+
+  function armMidnightTimer() {
+    if (midnightTimer) clearTimeout(midnightTimer);
+    var now = new Date();
+    var next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 2);
+    var wait = next.getTime() - now.getTime();
+    if (wait < 1000) wait = 1000;
+    if (wait > 2147483000) wait = 2147483000;
+    midnightTimer = setTimeout(function () { checkDayRollover(); armMidnightTimer(); }, wait);
+  }
+
+  function wakeUp() { checkDayRollover(); armMidnightTimer(); }
+
+  armMidnightTimer();
+  setInterval(checkDayRollover, 30000);
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') wakeUp();
+  });
+  window.addEventListener('pageshow', wakeUp);
+  window.addEventListener('focus', wakeUp);
+  if (tg && typeof tg.onEvent === 'function') {
+    try { tg.onEvent('activated', wakeUp); } catch (e) {}
+  }
 
   function fetchData() {
     showState('loading');
