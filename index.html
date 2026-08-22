@@ -773,15 +773,10 @@
     });
   }
 
-  function lastScoresBefore(key) {
-    var keys = Object.keys(days).filter(function (k) { return k < key && days[k] && days[k].s; }).sort();
-    if (!keys.length) return null;
-    return days[keys[keys.length - 1]].s;
-  }
-
   function applyDay(key) {
     var rec = days[key];
-    var scores = (rec && rec.s) ? rec.s : lastScoresBefore(key);
+    /* новый день начинается с нуля целиком: и галочки чистые, и все сферы на пятёрке */
+    var scores = (rec && rec.s) ? rec.s : null;
     state.spheres.forEach(function (sphere) {
       var s = scores && typeof scores[sphere.id] === 'number' ? scores[sphere.id] : sphere.defaultScore;
       sphere.score = typeof s === 'number' ? s : 5;
