@@ -33,6 +33,16 @@
           "id": "supplementsEvening",
           "label": "Бады вечер",
           "checked": false
+        },
+        {
+          "id": "walk",
+          "label": "Прогулка",
+          "checked": false
+        },
+        {
+          "id": "sleep23",
+          "label": "Сон до 23:00",
+          "checked": false
         }
       ]
     },
@@ -42,7 +52,7 @@
       "icon": "📱",
       "score": 5,
       "type": "counter",
-      "targetNote": "Сколько выпустила сегодня. Для сторис и шопс ставь 1, если было",
+      "targetNote": "Сколько выпустила за день. Для сторис и шопс ставь 1, если было",
       "items": [
         {
           "id": "reels",
@@ -82,7 +92,7 @@
       "icon": "💰",
       "score": 5,
       "type": "counter",
-      "targetNote": "Сколько получила сегодня по каждому курсу, в рублях",
+      "targetNote": "Сколько получила за день по каждому курсу, в рублях",
       "items": [
         {
           "id": "salesAmount",
@@ -179,6 +189,64 @@
         {
           "id": "materials",
           "label": "Обучающие материалы просмотрены",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "id": "rest",
+      "name": "Отдых",
+      "icon": "🛋",
+      "score": 5,
+      "type": "checklist",
+      "items": [
+        {
+          "id": "bath",
+          "label": "Ванна",
+          "checked": false
+        },
+        {
+          "id": "massage",
+          "label": "Массаж",
+          "checked": false
+        },
+        {
+          "id": "selfcare",
+          "label": "Уход за собой",
+          "checked": false
+        },
+        {
+          "id": "nap",
+          "label": "Дневной сон",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "id": "brightness",
+      "name": "Яркость жизни",
+      "icon": "✨",
+      "score": 5,
+      "type": "checklist",
+      "items": [
+        {
+          "id": "exhibition",
+          "label": "Выставка или кино",
+          "checked": false
+        },
+        {
+          "id": "travel",
+          "label": "Путешествие",
+          "checked": false
+        },
+        {
+          "id": "countryside",
+          "label": "Загородный отдых",
+          "checked": false
+        },
+        {
+          "id": "newplace",
+          "label": "Новое место или кафе",
           "checked": false
         }
       ]

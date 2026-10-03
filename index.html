@@ -126,6 +126,8 @@
     display: flex; align-items: center; justify-content: center; font-size: 16px;
   }
   .sphere-name { flex: 1; font-size: 14.5px; font-weight: 600; color: var(--ink); }
+  .sphere-marks { display: block; margin-top: 2px; font-size: 11.5px; font-weight: 600; color: var(--ink-soft); }
+  .sphere-marks.has { color: var(--pink-500); }
   .sphere-score { font-size: 17px; font-weight: 700; color: var(--pink-500); min-width: 30px; text-align: right; }
   .sphere-score span { font-size: 12px; color: var(--ink-soft); font-weight: 600; }
   .sphere-chevron { font-size: 12px; color: var(--ink-soft); transition: transform 0.22s ease; margin-left: 2px; }
@@ -302,6 +304,49 @@
 
   .storage-note { text-align: center; font-size: 11.5px; color: var(--ink-soft); margin: 14px 0 0; }
 
+  /* calendar */
+  .cal-card { padding: 16px 14px 14px; margin-bottom: 14px; }
+  .cal-head { display: flex; align-items: center; justify-content: space-between; margin: 0 2px 12px; }
+  .cal-title { font-size: 16px; font-weight: 700; color: var(--ink); }
+  .cal-nav {
+    width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--glass-border);
+    background: #fff; color: var(--pink-500); font-size: 18px; font-weight: 700; font-family: inherit;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--glass-shadow-sm);
+  }
+  .cal-nav[disabled] { opacity: .35; cursor: default; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+  .cal-wd { text-align: center; font-size: 10.5px; font-weight: 700; color: var(--ink-soft); letter-spacing: .5px; padding-bottom: 4px; }
+  .cal-day {
+    position: relative; aspect-ratio: 1 / 1; border-radius: 13px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--ink);
+    background: rgba(255,255,255,0.5); cursor: pointer; border: 2px solid transparent;
+    transition: transform .12s ease;
+  }
+  .cal-day:active { transform: scale(0.94); }
+  .cal-day.lvl1 { background: var(--pink-100); }
+  .cal-day.lvl2 { background: var(--pink-200); }
+  .cal-day.lvl3 { background: var(--pink-400); color: #fff; }
+  .cal-day .cal-n { font-size: 9.5px; font-weight: 700; opacity: .75; margin-top: 1px; line-height: 1; }
+  .cal-day.today { border-color: var(--pink-500); }
+  .cal-day.selected { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--pink-500); }
+  .cal-day.future { opacity: .35; cursor: default; }
+  .cal-day.blank { background: none; cursor: default; }
+  .cal-legend { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 12px; font-size: 11px; color: var(--ink-soft); }
+  .cal-legend i { display: inline-block; width: 12px; height: 12px; border-radius: 4px; }
+  .cal-hint { text-align: center; font-size: 12.5px; color: var(--ink-soft); margin: 0 0 14px; line-height: 1.5; }
+  .past-banner {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 12px 14px 12px 16px; margin-bottom: 14px; border-radius: 18px;
+    background: linear-gradient(135deg, #FFE6F0, #EFE9FF); border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow-sm);
+  }
+  .past-banner .pb-text { font-size: 13px; color: var(--ink); line-height: 1.35; }
+  .past-banner .pb-text b { color: var(--pink-500); }
+  .past-banner button {
+    flex: none; border: none; background: #fff; color: var(--pink-500); font-family: inherit;
+    font-size: 12px; font-weight: 700; padding: 8px 12px; border-radius: 999px; cursor: pointer;
+    box-shadow: var(--glass-shadow-sm);
+  }
   .hidden { display: none !important; }
 </style>
 </head>
@@ -343,9 +388,15 @@
     <div class="view-tabs">
       <div class="view-tab active" data-view="wheel">Колесо</div>
       <div class="view-tab" data-view="summary">Итоги</div>
+      <div class="view-tab" data-view="calendar">Календарь</div>
     </div>
 
     <div id="wheelView">
+      <div class="past-banner hidden" id="pastBanner">
+        <div class="pb-text" id="pastBannerText"></div>
+        <button id="backToTodayBtn">В сегодня</button>
+      </div>
+
       <div class="glass balance-card">
         <div>
           <p class="label">Твой баланс</p>
@@ -394,7 +445,7 @@
       <button class="save-btn" id="saveBtn">Сохранить результат</button>
       <p class="save-note" id="saveNote">Отметки сохраняются сами, а кнопка — чтобы записать наверняка</p>
 
-      <p class="version-note" id="versionNote">версия 2 · сохранение в Telegram</p>
+      <p class="version-note" id="versionNote">версия 3 · календарь · сохранение в Telegram</p>
     </div>
 
     <div id="summaryView" class="hidden">
@@ -432,6 +483,25 @@
       </div>
 
       <p class="storage-note" id="storageNote"></p>
+    </div>
+
+    <div id="calendarView" class="hidden">
+      <p class="cal-hint">Нажми на день — откроется колесо за этот день, и можно дописать, что не успела</p>
+      <div class="glass cal-card">
+        <div class="cal-head">
+          <button class="cal-nav" id="calPrev" aria-label="Предыдущий месяц">‹</button>
+          <div class="cal-title" id="calTitle"></div>
+          <button class="cal-nav" id="calNext" aria-label="Следующий месяц">›</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="cal-legend">
+          <span>меньше</span>
+          <i style="background:rgba(255,255,255,0.7)"></i><i style="background:var(--pink-100)"></i>
+          <i style="background:var(--pink-200)"></i><i style="background:var(--pink-400)"></i>
+          <span>больше отметок</span>
+        </div>
+      </div>
+      <p class="period-caption" id="calCaption"></p>
     </div>
   </div>
 
@@ -759,7 +829,11 @@
   /* ---------------- состояние дня ---------------- */
 
   var itemMeta = {};
-  var activeDay = todayKey();
+  /* realToday — настоящее «сегодня»; activeDay — день, который сейчас открыт в колесе
+     (обычно сегодня, но из календаря можно открыть любой прошлый) */
+  var realToday = todayKey();
+  var activeDay = realToday;
+  function isPastDay() { return activeDay !== realToday; }
 
   function buildItemMeta() {
     itemMeta = {};
@@ -1047,11 +1121,11 @@
 
     if (currentPeriod === 'day') {
       agg = liveDayAggregate();
-      captionText = 'Сегодня, ' + formatDayHuman(activeDay);
+      captionText = (isPastDay() ? '' : 'Сегодня, ') + formatDayHuman(activeDay);
       avgText = 'Средний балл дня';
-      daysText = 'Отметок сегодня';
+      daysText = isPastDay() ? 'Отметок за день' : 'Отметок сегодня';
       daysNum.textContent = Object.keys(agg.items).length;
-      walletNote.textContent = 'Сумма по всем курсам за сегодня';
+      walletNote.textContent = isPastDay() ? 'Сумма по всем курсам за ' + formatDayHuman(activeDay) : 'Сумма по всем курсам за сегодня';
       breakdown = 'none';
     } else if (currentPeriod === 'week') {
       var day = now.getDay();
@@ -1095,16 +1169,106 @@
     renderStorageNote();
   }
 
-  document.querySelectorAll('.view-tab').forEach(function (tab) {
-    tab.addEventListener('click', function () {
-      document.querySelectorAll('.view-tab').forEach(function (t) { t.classList.remove('active'); });
-      tab.classList.add('active');
-      currentView = tab.getAttribute('data-view');
-      document.getElementById('wheelView').classList.toggle('hidden', currentView !== 'wheel');
-      document.getElementById('summaryView').classList.toggle('hidden', currentView !== 'summary');
-      if (currentView === 'summary') renderSummary();
+  function switchView(view) {
+    currentView = view;
+    document.querySelectorAll('.view-tab').forEach(function (t) {
+      t.classList.toggle('active', t.getAttribute('data-view') === view);
     });
+    document.getElementById('wheelView').classList.toggle('hidden', view !== 'wheel');
+    document.getElementById('summaryView').classList.toggle('hidden', view !== 'summary');
+    document.getElementById('calendarView').classList.toggle('hidden', view !== 'calendar');
+    if (view === 'summary') renderSummary();
+    if (view === 'calendar') {
+      calMonth = new Date(parseKey(activeDay).getFullYear(), parseKey(activeDay).getMonth(), 1);
+      renderCalendar();
+    }
+  }
+
+  document.querySelectorAll('.view-tab').forEach(function (tab) {
+    tab.addEventListener('click', function () { switchView(tab.getAttribute('data-view')); });
   });
+
+  /* ---------------- календарь ---------------- */
+
+  var calMonth = new Date();
+  var WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+
+  function renderCalendar() {
+    var grid = document.getElementById('calGrid');
+    var y = calMonth.getFullYear(), m = calMonth.getMonth();
+    var todayD = parseKey(realToday);
+    document.getElementById('calTitle').textContent =
+      MONTH_NAMES[m].charAt(0).toUpperCase() + MONTH_NAMES[m].slice(1) + ' ' + y;
+    document.getElementById('calNext').disabled =
+      (y > todayD.getFullYear()) || (y === todayD.getFullYear() && m >= todayD.getMonth());
+
+    grid.innerHTML = '';
+    WEEKDAYS.forEach(function (w) {
+      var el = document.createElement('div');
+      el.className = 'cal-wd';
+      el.textContent = w;
+      grid.appendChild(el);
+    });
+
+    var first = new Date(y, m, 1).getDay();
+    var offset = first === 0 ? 6 : first - 1;
+    for (var b = 0; b < offset; b++) {
+      var blank = document.createElement('div');
+      blank.className = 'cal-day blank';
+      grid.appendChild(blank);
+    }
+
+    var daysInMonth = new Date(y, m + 1, 0).getDate();
+    var filled = 0;
+    for (var d = 1; d <= daysInMonth; d++) {
+      (function (d) {
+        var key = y + '-' + pad2(m + 1) + '-' + pad2(d);
+        var n = marksCount(days[key]);
+        if (n) filled += 1;
+        var cell = document.createElement('div');
+        var cls = 'cal-day';
+        if (n >= 8) cls += ' lvl3'; else if (n >= 4) cls += ' lvl2'; else if (n >= 1) cls += ' lvl1';
+        if (key === realToday) cls += ' today';
+        if (key === activeDay) cls += ' selected';
+        var future = key > realToday;
+        if (future) cls += ' future';
+        cell.className = cls;
+        cell.innerHTML = '<span>' + d + '</span>' + (n ? '<span class="cal-n">' + n + '</span>' : '');
+        if (!future) cell.addEventListener('click', function () { openDay(key); });
+        grid.appendChild(cell);
+      })(d);
+    }
+
+    document.getElementById('calCaption').textContent = filled
+      ? filled + ' ' + plural(filled, 'день', 'дня', 'дней') + ' с отметками в этом месяце'
+      : 'В этом месяце пока нет отметок';
+  }
+
+  document.getElementById('calPrev').addEventListener('click', function () {
+    calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1);
+    renderCalendar();
+  });
+  document.getElementById('calNext').addEventListener('click', function () {
+    if (this.disabled) return;
+    calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1);
+    renderCalendar();
+  });
+
+  /* открыть день в колесе: всё, что отметишь, запишется в этот день */
+  function openDay(key) {
+    if (key > realToday) return;
+    flushNow();
+    activeDay = key;
+    applyDay(activeDay);
+    renderApp();
+    switchView('wheel');
+    window.scrollTo(0, 0);
+    if (tg && tg.HapticFeedback && tg.HapticFeedback.selectionChanged) {
+      try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
+    }
+  }
+
+  document.getElementById('backToTodayBtn').addEventListener('click', function () { openDay(realToday); });
 
   document.querySelectorAll('.period-tab').forEach(function (tab) {
     tab.addEventListener('click', function () {
@@ -1219,8 +1383,38 @@
     ring.style.strokeDashoffset = RING_CIRC * (1 - pct / 100);
   }
 
+  /* «отмечено 3 из 7» / «рилс 1 · карусели 2» — чтобы отметки было видно, не разворачивая карточку */
+  function sphereMarksText(sphere) {
+    var items = sphere.items || [];
+    if (!items.length) return '';
+    if (sphere.type === 'counter') {
+      var total = 0, filled = 0;
+      items.forEach(function (item) {
+        var v = parseInt(item.value, 10) || 0;
+        if (v > 0) { filled += 1; total += v; }
+      });
+      if (!filled) return 'пока ничего';
+      return sphere.id === 'finance' ? formatMoney(total) : ('заполнено ' + filled + ' из ' + items.length + ' · всего ' + total);
+    }
+    var n = items.filter(function (item) { return item.checked; }).length;
+    return n ? ('отмечено ' + n + ' из ' + items.length) : 'пока ничего';
+  }
+
+  function sphereHasMarks(sphere) {
+    return (sphere.items || []).some(function (item) {
+      return sphere.type === 'counter' ? (parseInt(item.value, 10) || 0) > 0 : item.checked;
+    });
+  }
+
+  function updateMarksEl(sphere, el) {
+    el.textContent = sphereMarksText(sphere);
+    el.classList.toggle('has', sphereHasMarks(sphere));
+  }
+
   function refreshSphere(index, card, scoreEl) {
     var sphere = state.spheres[index];
+    var marksEl = card.querySelector('.sphere-marks');
+    if (marksEl) updateMarksEl(sphere, marksEl);
     scoreEl.innerHTML = formatScore(computeScore(sphere)) + '<span>/10</span>';
     animateTo(computePoints(state.spheres));
     updateBalanceCard(state.spheres);
@@ -1315,6 +1509,12 @@
       var name = document.createElement('div');
       name.className = 'sphere-name';
       name.textContent = sphere.name;
+      var marks = document.createElement('span');
+      marks.className = 'sphere-marks';
+      updateMarksEl(sphere, marks);
+      name.appendChild(marks);
+      /* открыла прошлый день — сразу показываем, что в нём уже стоит */
+      if (isPastDay() && sphereHasMarks(sphere)) card.classList.add('expanded');
 
       var score = document.createElement('div');
       score.className = 'sphere-score';
@@ -1362,7 +1562,16 @@
 
   function renderApp() {
     renderProfile();
-    document.getElementById('updatedText').textContent = 'Сегодня, ' + formatDayHuman(activeDay);
+    var past = isPastDay();
+    document.getElementById('updatedText').textContent = (past ? 'Запись за ' : 'Сегодня, ') + formatDayHuman(activeDay);
+    document.getElementById('pastBanner').classList.toggle('hidden', !past);
+    if (past) {
+      var wd = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'][parseKey(activeDay).getDay()];
+      document.getElementById('pastBannerText').innerHTML =
+        'Ты правишь <b>' + formatDayHuman(activeDay) + '</b>, ' + wd + '.<br>'
+        + (markCount() ? 'Уже стоит ' + markCount() + ' ' + plural(markCount(), 'отметка', 'отметки', 'отметок') + ' — допиши, что не успела'
+                       : 'В этот день отметок ещё нет — можно добавить');
+    }
 
     drawStaticChart(state.spheres);
     renderList(state.spheres);
@@ -1384,12 +1593,18 @@
 
   function checkDayRollover() {
     var key = todayKey();
-    if (key === activeDay) return;
+    if (key === realToday) return;
     flushNow();
-    activeDay = key;
-    applyDay(activeDay);
+    var wasOnToday = !isPastDay();
+    realToday = key;
+    /* если в этот момент правишь прошлый день — не выдёргиваем, остаёмся в нём */
+    if (wasOnToday) {
+      activeDay = key;
+      applyDay(activeDay);
+    }
     renderApp();
     if (currentView === 'summary') renderSummary();
+    if (currentView === 'calendar') renderCalendar();
   }
 
   function armMidnightTimer() {
@@ -1427,7 +1642,8 @@
           sphere.defaultScore = typeof sphere.score === 'number' ? sphere.score : 5;
         });
         buildItemMeta();
-        activeDay = todayKey();
+        realToday = todayKey();
+        activeDay = realToday;
         bootstrapStorage(function () {
           applyDay(activeDay);
           renderApp();
