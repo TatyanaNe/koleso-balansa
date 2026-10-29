@@ -123,6 +123,11 @@
           "id": "dessertsOrder",
           "label": "Десерты на заказ",
           "value": 0
+        },
+        {
+          "id": "vkShops",
+          "label": "ВК шопсы",
+          "value": 0
         }
       ]
     },
