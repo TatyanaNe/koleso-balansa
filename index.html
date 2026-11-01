@@ -266,6 +266,9 @@
   .day-detail.open { display: block; }
   .day-detail b { color: var(--ink); font-weight: 600; }
 
+  .month-row { cursor: pointer; }
+  .month-nav { margin: 0 2px 14px; }
+  #rateNum { margin-bottom: 2px; }
   .empty-note { font-size: 13px; color: var(--ink-soft); text-align: center; padding: 6px 0 2px; }
 
   .save-btn {
@@ -445,7 +448,7 @@
       <button class="save-btn" id="saveBtn">Сохранить результат</button>
       <p class="save-note" id="saveNote">Отметки сохраняются сами, а кнопка — чтобы записать наверняка</p>
 
-      <p class="version-note" id="versionNote">версия 3 · календарь · сохранение в Telegram</p>
+      <p class="version-note" id="versionNote">версия 4 · итоги по месяцам · оценка месяца</p>
     </div>
 
     <div id="summaryView" class="hidden">
@@ -457,6 +460,19 @@
       </div>
 
       <p class="period-caption" id="periodCaption"></p>
+
+      <div class="cal-head month-nav hidden" id="monthNav">
+        <button class="cal-nav" id="monPrev" aria-label="Предыдущий месяц">‹</button>
+        <div class="cal-title" id="monTitle"></div>
+        <button class="cal-nav" id="monNext" aria-label="Следующий месяц">›</button>
+      </div>
+
+      <div class="glass summary-card hidden" id="rateCard">
+        <p class="label">Как тебе этот месяц?</p>
+        <div class="num" id="rateNum">—<span>/100</span></div>
+        <input type="range" class="sphere-slider" id="rateRange" min="0" max="100" step="1" value="50">
+        <p class="note" id="rateNote">Подвинь ползунок — оценка сохранится сама</p>
+      </div>
 
       <div class="summary-top">
         <div class="glass summary-card">
@@ -1062,15 +1078,18 @@
       months.forEach(function (m) {
         var info = agg.byMonth[m];
         var row = document.createElement('div');
-        row.className = 'stat-row';
+        row.className = 'stat-row month-row';
         var lbl = document.createElement('div');
         lbl.className = 'stat-label';
         lbl.textContent = MONTH_NAMES[parseInt(m.slice(5, 7), 10) - 1];
         var val = document.createElement('div');
         val.className = 'stat-value';
+        var rate = monthRates[m];
         val.textContent = info.days + ' ' + plural(info.days, 'день', 'дня', 'дней')
-          + (info.money ? ' · ' + formatMoney(info.money) : '');
+          + (info.money ? ' · ' + formatMoney(info.money) : '')
+          + (rate ? ' · ' + rate.v + '/100' : '') + ' ›';
         row.appendChild(lbl); row.appendChild(val);
+        row.addEventListener('click', function () { openMonth(m); });
         list.appendChild(row);
       });
       return;
@@ -1139,10 +1158,10 @@
       walletNote.textContent = 'Сумма по всем курсам за неделю';
       breakdown = 'days';
     } else if (currentPeriod === 'month') {
-      var mStart = new Date(now.getFullYear(), now.getMonth(), 1);
-      var mEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      var mStart = new Date(sumMonth.getFullYear(), sumMonth.getMonth(), 1);
+      var mEnd = new Date(sumMonth.getFullYear(), sumMonth.getMonth() + 1, 0);
       agg = aggregate(dateKey(mStart), dateKey(mEnd));
-      captionText = MONTH_NAMES[now.getMonth()].charAt(0).toUpperCase() + MONTH_NAMES[now.getMonth()].slice(1) + ' ' + now.getFullYear();
+      captionText = '';
       avgText = 'Средний балл месяца';
       daysText = 'Дней с отметками';
       daysNum.textContent = agg.dayKeys.length;
@@ -1159,6 +1178,8 @@
     }
 
     caption.textContent = captionText;
+    caption.classList.toggle('hidden', !captionText);
+    renderMonthNav();
     avgLabel.textContent = avgText;
     daysLabel.textContent = daysText;
     avgNum.innerHTML = formatScore(agg.avg) + '<span>/10</span>';
@@ -1270,14 +1291,138 @@
 
   document.getElementById('backToTodayBtn').addEventListener('click', function () { openDay(realToday); });
 
-  document.querySelectorAll('.period-tab').forEach(function (tab) {
-    tab.addEventListener('click', function () {
-      document.querySelectorAll('.period-tab').forEach(function (t) { t.classList.remove('active'); });
-      tab.classList.add('active');
-      currentPeriod = tab.getAttribute('data-period');
-      renderSummary();
+  function setPeriod(period) {
+    document.querySelectorAll('.period-tab').forEach(function (t) {
+      t.classList.toggle('active', t.getAttribute('data-period') === period);
     });
+    currentPeriod = period;
+    renderSummary();
+  }
+
+  document.querySelectorAll('.period-tab').forEach(function (tab) {
+    tab.addEventListener('click', function () { setPeriod(tab.getAttribute('data-period')); });
   });
+
+  /* ---------------- итоги по месяцам + оценка месяца ---------------- */
+  /* sumMonth — месяц, который листается стрелками во вкладке «Месяц».
+     Оценки месяцев: monthRates[ '2026-10' ] = { v: 0..100, t: timestamp }, один ключ в CloudStorage
+     (не с префиксом wheel-v2-, чтобы не путаться с кусками дней) + копия в localStorage */
+
+  var sumMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  var RATE_KEY = 'wheelMonthRate';
+  var monthRates = {};
+  var rateTimer = null;
+
+  function monthKeyOf(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1); }
+  function monthTitle(m, y) { return MONTH_NAMES[m].charAt(0).toUpperCase() + MONTH_NAMES[m].slice(1) + ' ' + y; }
+
+  function mergeRates(raw) {
+    if (!raw) return;
+    var parsed;
+    try { parsed = JSON.parse(raw); } catch (e) { return; }
+    if (!parsed || typeof parsed !== 'object') return;
+    Object.keys(parsed).forEach(function (m) {
+      var inc = parsed[m];
+      if (!inc || typeof inc.v !== 'number') return;
+      if (!monthRates[m] || (inc.t || 0) > (monthRates[m].t || 0)) monthRates[m] = inc;
+    });
+  }
+
+  function loadRates(done) {
+    if (localAvailable) {
+      try { mergeRates(window.localStorage.getItem(RATE_KEY)); } catch (e) {}
+    }
+    if (!cloud) { done(); return; }
+    var finished = false;
+    var guard = setTimeout(function () { if (!finished) { finished = true; done(); } }, 4000);
+    try {
+      cloud.getItem(RATE_KEY, function (err, raw) {
+        if (!err) mergeRates(raw);
+        if (!finished) { finished = true; clearTimeout(guard); done(); }
+      });
+    } catch (e) {
+      if (!finished) { finished = true; clearTimeout(guard); done(); }
+    }
+  }
+
+  function saveRates() {
+    var payload = JSON.stringify(monthRates);
+    if (localAvailable) {
+      try { window.localStorage.setItem(RATE_KEY, payload); } catch (e) {}
+    }
+    if (!cloud) { setSaveStatus(localAvailable ? 'local' : 'fail'); return; }
+    setSaveStatus('saving');
+    try {
+      cloud.setItem(RATE_KEY, payload, function (err) { setSaveStatus(err ? 'fail' : 'cloud'); });
+    } catch (e) { setSaveStatus('fail'); }
+  }
+
+  function rateFace(v) {
+    if (v < 20) return '😩';
+    if (v < 40) return '😮‍💨';
+    if (v < 60) return '🙂';
+    if (v < 80) return '😊';
+    return '🤩';
+  }
+
+  function renderRate() {
+    var mk = monthKeyOf(sumMonth);
+    var rec = monthRates[mk];
+    var range = document.getElementById('rateRange');
+    var num = document.getElementById('rateNum');
+    var note = document.getElementById('rateNote');
+    if (rec) {
+      range.value = rec.v;
+      num.innerHTML = rec.v + '<span>/100</span> ' + rateFace(rec.v);
+      note.textContent = 'Можно поменять в любой момент';
+    } else {
+      range.value = 50;
+      num.innerHTML = '—<span>/100</span>';
+      note.textContent = 'Подвинь ползунок — оценка сохранится сама';
+    }
+  }
+
+  function renderMonthNav() {
+    var isMonth = currentPeriod === 'month';
+    document.getElementById('monthNav').classList.toggle('hidden', !isMonth);
+    document.getElementById('rateCard').classList.toggle('hidden', !isMonth);
+    if (!isMonth) return;
+    var now = new Date();
+    document.getElementById('monTitle').textContent = monthTitle(sumMonth.getMonth(), sumMonth.getFullYear());
+    document.getElementById('monNext').disabled =
+      sumMonth.getFullYear() > now.getFullYear() ||
+      (sumMonth.getFullYear() === now.getFullYear() && sumMonth.getMonth() >= now.getMonth());
+    renderRate();
+  }
+
+  function shiftMonth(delta) {
+    var next = new Date(sumMonth.getFullYear(), sumMonth.getMonth() + delta, 1);
+    var now = new Date();
+    if (next > new Date(now.getFullYear(), now.getMonth(), 1)) return;
+    sumMonth = next;
+    renderSummary();
+    if (tg && tg.HapticFeedback && tg.HapticFeedback.selectionChanged) {
+      try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
+    }
+  }
+
+  document.getElementById('monPrev').addEventListener('click', function () { shiftMonth(-1); });
+  document.getElementById('monNext').addEventListener('click', function () { shiftMonth(1); });
+
+  document.getElementById('rateRange').addEventListener('input', function (e) {
+    var v = parseInt(e.target.value, 10) || 0;
+    monthRates[monthKeyOf(sumMonth)] = { v: v, t: Date.now() };
+    document.getElementById('rateNum').innerHTML = v + '<span>/100</span> ' + rateFace(v);
+    document.getElementById('rateNote').textContent = 'Можно поменять в любой момент';
+    if (rateTimer) clearTimeout(rateTimer);
+    rateTimer = setTimeout(saveRates, 600);
+  });
+
+  function openMonth(mk) {
+    sumMonth = new Date(parseInt(mk.slice(0, 4), 10), parseInt(mk.slice(5, 7), 10) - 1, 1);
+    setPeriod('month');
+    window.scrollTo(0, 0);
+  }
 
   /* ---------------- колесо ---------------- */
 
@@ -1647,6 +1792,7 @@
         bootstrapStorage(function () {
           applyDay(activeDay);
           renderApp();
+          loadRates(function () { if (currentView === 'summary') renderSummary(); });
         });
       })
       .catch(function () { showState('error'); });
